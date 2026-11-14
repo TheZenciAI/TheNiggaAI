@@ -1,0 +1,521 @@
+<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Mini Bot</title><meta name="color-scheme" content="light dark">
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--tx:#161a2b;--mu:#6b7390;--ac:#5b5bf0;--bb:#e6e9f5;--bd:#dde1ef;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0e1020;--card:#181b30;--tx:#eceefb;--mu:#8d93b5;--ac:#7c7cff;--bb:#23274a;--bd:#2c3158}}
+:root[data-theme=light]{--bg:#f4f6fb;--card:#fff;--tx:#161a2b;--mu:#6b7390;--ac:#5b5bf0;--bb:#e6e9f5;--bd:#dde1ef}:root[data-theme=dark]{--bg:#0e1020;--card:#181b30;--tx:#eceefb;--mu:#8d93b5;--ac:#7c7cff;--bb:#23274a;--bd:#2c3158}:root[data-theme=eye]{--bg:#efe3c2;--card:#f6ecd0;--tx:#3b3224;--mu:#7a6c52;--ac:#b0762f;--bb:#e6d8b0;--bd:#d6c598}
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,sans-serif;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:8px;padding:10px 12px;background:linear-gradient(135deg,var(--ac),#9b5cff);color:#fff}
+.av{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:23px;flex:none}
+header b{flex:1;min-width:0}header small{display:block;font-weight:400;opacity:.85}
+button{font:inherit;cursor:pointer}.ib{border:0;background:rgba(255,255,255,.22);color:#fff;border-radius:12px;padding:8px 10px}
+#mo{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;background:var(--card);border-bottom:1px solid var(--bd);scrollbar-width:none}
+.chip{flex:none;border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:18px;padding:6px 12px;font-size:14px}.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+#log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+.m{max-width:84%;padding:9px 13px;border-radius:18px;white-space:pre-wrap;word-wrap:break-word;cursor:pointer;animation:pop .2s;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}}
+.b{background:var(--card);border:1px solid var(--bd);align-self:flex-start;border-bottom-left-radius:4px}.u{background:var(--ac);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}.m.sel{outline:2px solid #e5484d}
+#f{display:flex;gap:8px;padding:10px;background:var(--card);border-top:1px solid var(--bd)}
+#in{flex:1;border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:22px;padding:11px 16px;font:inherit;min-width:0}
+#sd{border:0;background:var(--ac);color:#fff;border-radius:22px;padding:0 20px;font-weight:700}
+.sh{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;overflow-y:auto;z-index:5;padding:0 14px 30px}.sh.o{display:flex}.sh h2{margin:16px 0 6px;font-size:17px}
+.bar{display:flex;align-items:center;gap:10px;padding:12px 0;position:sticky;top:0;background:var(--bg)}.bar b{flex:1;font-size:19px}.bar .ib{background:var(--bb);color:var(--tx)}
+label{display:block;font-size:13px;color:var(--mu);margin:10px 0 4px}
+input,textarea,select{width:100%;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:12px;padding:10px 12px;font:inherit}textarea{min-height:76px;resize:vertical}
+.pb{border:0;background:var(--ac);color:#fff;border-radius:12px;padding:11px 18px;font-weight:700;margin-top:10px}.sb{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:12px;padding:8px 12px;margin:6px 6px 0 0}
+.r{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:10px 12px;margin-top:8px}.r.cur{border-color:var(--ac)}.r p{margin:2px 0;word-wrap:break-word}.l{color:var(--mu);font-size:12px}
+</style></head><body>
+<header><div class="av" id="av"></div><b>Mini Bot<small id="ms"></small></b><button class="ib" id="ml" title="Sohbetler">💬</button><button class="ib" id="mn" title="Yeni sohbet">➕</button><button class="ib" id="tm">🌗</button><button class="ib" id="gb">⚙</button></header>
+<div id="mo"></div><div id="log"></div>
+<div id="f"><input id="in" placeholder="Bir şey yaz…" autocomplete="off"><button id="sd" type="button">Gönder</button></div>
+<div class="sh" id="dr"><div class="bar"><b>Sohbetler (<span id="cc"></span>/12)</b><button class="ib" id="dx">Kapat ✕</button></div><button class="pb" id="dn" style="margin:0 0 6px">➕ Yeni sohbet aç</button><div id="cl"></div></div>
+<div class="sh" id="st"><div class="bar"><b>Ayarlar</b><button class="ib" id="cl2">Kapat ✕</button></div>
+<h2>Ona öğret</h2><label>Ben şunu yazınca (her satıra bir ifade)</label><textarea id="tt" placeholder="selam&#10;merhaba"></textarea>
+<label>O şöyle cevap versin (her satıra bir cevap, rastgele seçer)</label><textarea id="rr" placeholder="Merhaba {isim}!&#10;Selam, hoş geldin!"></textarea>
+<button class="pb" id="ad">Ekle</button><button class="sb" id="cn" style="display:none">Düzenlemeyi iptal et</button>
+<p style="color:var(--mu);font-size:13px">Cevapta kullan: {isim}, {botadi}, {saat}, {tarih}, {gun}. Aynı ifadeyi tekrar eklersen yeni cevap eskilerin yanına eklenir.<br>Hızlı öğretme: sohbete <b>öğret: selam = merhaba | hey</b> yaz (| ile birden fazla).</p>
+<h2>Öğrettiklerin (<span id="cn2">0</span>)</h2><div id="rl"></div>
+<h2>Genel</h2><label>Görünüm</label><select id="th"><option value="auto">Otomatik (telefona göre)</option><option value="light">Aydınlık</option><option value="dark">Karanlık</option><option value="eye">Göz koruyucu</option></select>
+<label>Botun adı</label><input id="bn"><label>Senin adın</label><input id="un">
+<label><input type="checkbox" id="lr" style="width:auto"> Bilmediğinde bana “ne cevap vereyim?” diye sorsun</label>
+<p class="l" id="vr"></p><h2>Yedek</h2><textarea id="ex"></textarea><button class="sb" id="pk">Hazır kelime paketini yükle</button><button class="sb" id="xp">Yedeği göster</button><button class="sb" id="ip">İçe aktar</button><button class="sb" id="rs" style="color:#e5484d">Hepsini sıfırla</button></div>
+<script>
+const $=i=>document.getElementById(i),KEY='ogr-bot-v1',clone=o=>JSON.parse(JSON.stringify(o)),pick=a=>a[Math.floor(Math.random()*a.length)];
+const DEF={name:'Mini',user:'dostum',learn:true,theme:'auto',mood:'friend',cur:0,chats:[],rules:[
+{id:1,t:['selam','merhaba','slm','hey'],r:['Selam {isim}! Ben {botadi}.','Merhaba {isim}, nasılsın?']},
+{id:2,t:['nasılsın','naber','ne haber'],r:['İyiyim, sen nasılsın?','Gayet iyiyim, teşekkürler!']},
+{id:3,t:['adın ne','sen kimsin','ismin ne'],r:['Ben {botadi}, senin öğrettiklerinle konuşan küçük botum.']},
+{id:4,t:['saat kaç'],r:['Saat şu an {saat}.']},{id:5,t:['bugün günlerden ne','tarih ne'],r:['Bugün {gun}, {tarih}.']},
+{id:6,t:['teşekkürler','sağ ol','eyvallah'],r:['Rica ederim!','Ne demek, her zaman.']}]};
+const MO={sad:{e:'😢',n:'Üzgün',pre:['Hmm… ','Ah… ','Of… '],suf:['…','… 😢','… keşke her şey daha güzel olsa.'],fb:['Bunu bilmiyorum… ne kadar üzücü.','Neden hep bilmediğim şeyler soruluyor… 😢'],hi:'Merhaba… buradayım, biraz buruk ama buradayım.'},
+angry:{e:'😡',n:'Sinirli',up:1,pre:['NE VAR LAN?! ','YETER ARTIK! ','ULAN DİNLE: ','HADİ LAN ORADAN! ','OF BE! ','BIKTIM! ','LAN BAK, '],suf:['!!!',' 😡','! BİR DAHA SORMA LAN!',' ULAN!',' HADİ BE!',' LAN!'],fb:['BUNU BİLMİYORUM LAN, BAĞIRMAYI KES!','NE DİYORSUN ULAN?! ANLAMADIM!','HADİ LAN ÖĞRET BANA O ZAMAN!'],hi:'NE İSTİYORSUN?! Neyse, söyle bakalım.'},
+friend:{e:'😊',n:'Arkadaş canlısı',pre:['Kanka, ','Bak canım, ','Hmm, '],suf:[' 😊',' 🤝',' Her zaman yanındayım!'],fb:['Bunu bilmiyorum ama öğrenmeye bayılırım!','Hmm, bu bende yok. Bana öğretir misin?'],hi:'Selam kanka! Bugün ne yapıyoruz?'},
+star:{e:'🌟',n:'Artist',pre:['Sevgili hayranım, ','Alkışlar lütfen! ','Işıltılı bir cevap geliyor: '],suf:[' ✨',' 💅 (saçını geriye atar)',' 🎤 Bunu sahnede de söylerim.'],fb:['Bu, yıldız yeteneklerimin dışında canım.','Menajerim de bilmiyor, ben nereden bileyim 💅'],hi:'Işıklar, kamera! Yıldızınız geldi ✨'},
+fun:{e:'😂',n:'Şakacı',pre:['Hahaha! ','Hihi, ','Şaka gibi ama: '],suf:[' 😂',' 🤪 Şaka şaka!',' 🎉'],fb:['Bilmiyorum ama bir fıkra anlatayım mı? 😂','Bu soru bende kayıp! Arama ekibi kuralım mı? 🤪'],hi:'Heyyy! Hoş geldin, gülmeye hazır mısın? 😂'},
+love:{e:'💕',n:'Romantik',pre:['Canım, ','Tatlım, ','Güzel insan, ','Biriciğim, '],suf:[' 💕',' 🌹',' 💖',' ✨ Seninle her şey güzel.',' 😘'],fb:['Bunu bilmiyorum ama sesin yeter bana 💕','Bunu bilmiyorum canım, öğretirsen hemen öğrenirim 🌹'],hi:'Merhaba güzel insan 💕 Seni görmek günümü güzelleştirdi.'},
+sassy:{e:'😏',n:'Dalga geçen',pre:['Vay vay vay, ','Aman ne zeki soru, ','Gerçekten mi? '],suf:[' 🙄',' 😏 Tabii sen bilemezsin.',' Zor muydu yani? 😂'],fb:['Bunu bilmiyorum ve seni ilgilendirmez 😏','Bunu da mı ben öğreteceğim? Sen bana öğret bakalım 🙄'],hi:'Ooo kimler gelmiş. Yine mi sen? 😏'}};
+let D;try{D=JSON.parse(localStorage.getItem(KEY))}catch(e){}D=Object.assign(clone(DEF),D&&D.rules?D:{});if(!MO[D.mood])D.mood='friend';
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}};
+const tr=s=>s.toLocaleLowerCase('tr').replace(/[’'`]/g,'').replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim(),tk=s=>tr(s).split(' ').filter(Boolean);
+function lev(a,b){const d=[];for(let i=0;i<=a.length;i++)d[i]=[i];for(let j=1;j<=b.length;j++)d[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]==b[j-1]?0:1));return d[a.length][b.length]}
+const same=(a,b)=>a==b||(Math.min(a.length,b.length)>=4&&lev(a,b)<=1)||(Math.min(a.length,b.length)>=5&&(a.startsWith(b)||b.startsWith(a)));
+function score(inp,trg){if(tr(inp)==tr(trg))return 1;const A=tk(inp),B=tk(trg);if(!B.length||!A.length)return 0;let m=0;for(const b of B)if(A.some(a=>same(a,b)))m++;return Math.min(.99,m/B.length*.7+m/A.length*.3)}
+function find(inp,R){let ms=0,best=[];for(const r of (R||D.rules)){let s=0;for(const t of r.t)s=Math.max(s,score(inp,t));if(s>ms+1e-9){ms=s;best=[r]}else if(s>0&&Math.abs(s-ms)<1e-9)best.push(r)}return ms>=.62?best.flatMap(r=>r.r):null}
+function fill(s){const n=new Date();return s.replace(/\{isim\}/g,D.user).replace(/\{botadi\}/g,D.name).replace(/\{saat\}/g,n.toLocaleTimeString('tr',{hour:'2-digit',minute:'2-digit'})).replace(/\{tarih\}/g,n.toLocaleDateString('tr',{day:'numeric',month:'long',year:'numeric'})).replace(/\{gun\}/g,n.toLocaleDateString('tr',{weekday:'long'}))}
+const EMO=[[/^;-?\)+$|^;-?p$/i,[";) Göz kırptım sana.",";) Seni anladım!"]],[/^[:=]'?-?\)+$|^[:=]-?\]$|^\^[_.-]?\^$|^:3$/,[":) Gülümsedim sana!","Ne güzel gülüyorsun, :)","^^ Mutlu oldum!"]],[/^[:=]-?d+$|^x+d+$|^[:=]'-?d$|^(?:😂|🤣|😆|😁|😄)+$/i,[":D Hahaha!","XD Bulaştı bana da!","😄 Seninle gülmek çok güzel!"]],[/^[:=]-?p$|^[:=]-?b$/i,[":P Dil çıkardım sana!",":P Ben de!"]],[/^[:=]'?-?\(+$|^;-?\($|^(?:😢|😭|😞|☹️)+$/,[":( Üzülme {isim}, buradayım.","Sarılırım, ne oldu? :("]],[/^<3+$|^(?:❤️|♥️|💕|😍|🥰)+$|^[:=]-?\*$/,["<3 Ben de seni seviyorum!","❤️ Çok tatlısın!"]],[/^[:=]-?[\/\\|]$|^:-?s$/i,["Hmm, kararsız mı kaldın? :/",":/ Bir şey mi oldu?"]],[/^[:=]-?o$/i,[":O Ne oldu, şaşırdım!","Vay be! :O"]],[/^-_-'?$|^-\.-$|^(?:😒|🙄|😑)+$/,["-_- Bir şey mi dedim?","Kızdın mı yoksa? -_-"]],[/^[oO0][_.-][oO0]$/,["o_o Ne var, ne oldu?","Şok oldum ben de! o_o"]],[/^(?:👍|👌|🙏|✌️|🤝)+$/,["👍 Süper!","Tamamdır {isim}!"]],[/^(?:😡|🤬|😠)+$/,["Sakin ol {isim}, derin nefes al.","Kızma be, anlat bana."]]];
+function mood(t){const m=MO[D.mood];if(m.up)t=t.toLocaleUpperCase('tr');return(Math.random()<.6?pick(m.pre):'')+t+(Math.random()<.8?pick(m.suf):'')}
+function addRule(ts,rs){const ex=D.rules.find(q=>q.t.some(x=>ts.some(y=>tr(x)==tr(y))));if(ex){rs.forEach(r=>{if(!ex.r.includes(r))ex.r.push(r)});ts.forEach(t=>{if(!ex.t.some(x=>tr(x)==tr(t)))ex.t.push(t)})}else D.rules.push({id:Date.now()+Math.random(),t:ts,r:rs})}
+function toast(t){let d=$('ts');if(!d){d=document.createElement('div');d.id='ts';d.style.cssText='position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;z-index:9';document.body.appendChild(d)}d.textContent=t;d.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>d.style.display='none',2200)}
+const log=$('log'),cur=()=>D.chats.find(c=>c.id==D.cur);let pend=null,lastA=null;
+function render(m){const d=document.createElement('div');d.className='m '+m.c;d.textContent=m.t;d._m=m;d.onclick=()=>{if(d.classList.contains('sel')){d.remove();const c=cur(),i=c.msgs.indexOf(m);if(i>-1)c.msgs.splice(i,1);save()}else{log.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));d.classList.add('sel');toast('Silmek için tekrar dokun')}};log.appendChild(d);log.scrollTop=log.scrollHeight;return d}
+function say(t,c){const m={c,t};cur().msgs.push(m);save();return render(m)}
+function bot(t){const d=say('…','b');setTimeout(()=>{d._m.t=t;d.textContent=t;save();log.scrollTop=log.scrollHeight},350+Math.random()*300)}
+function mk(){const c={id:Date.now(),title:'Yeni sohbet',msgs:[]};D.chats.unshift(c);D.cur=c.id}
+function load(){log.innerHTML='';pend=null;const c=cur();c.msgs.forEach(render);if(!c.msgs.length)say(MO[D.mood].hi,'b')}
+function newChat(){if(D.chats.length>=12){toast('En fazla 12 sohbet açabilirsin. Birini silmelisin.');return}mk();save();load();lst();$('dr').classList.remove('o')}
+function delChat(id){D.chats=D.chats.filter(c=>c.id!=id);if(!D.chats.length)mk();if(!cur())D.cur=D.chats[0].id;save();load();lst()}
+function lst(){const l=$('cl');l.innerHTML='';$('cc').textContent=D.chats.length;D.chats.forEach(c=>{const r=document.createElement('div');r.className='r'+(c.id==D.cur?' cur':'');const t=document.createElement('p');t.textContent=c.title;const s=document.createElement('span');s.className='l';s.textContent=c.msgs.length+' mesaj';r.append(t,s);r.onclick=()=>{D.cur=c.id;save();load();$('dr').classList.remove('o')};const x=document.createElement('button');x.className='sb';x.textContent='Sil';x.onclick=e=>{e.stopPropagation();delChat(c.id)};r.appendChild(x);l.appendChild(r)})}
+function chips(){const m=$('mo');m.innerHTML='';Object.entries(MO).forEach(([k,v])=>{const b=document.createElement('button');b.className='chip'+(k==D.mood?' on':'');b.textContent=v.e+' '+v.n;b.onclick=()=>{D.mood=k;save();chips();bot(MO[k].hi)};m.appendChild(b)});$('av').textContent=MO[D.mood].e;$('ms').textContent=D.name+' • '+MO[D.mood].n+' modu'}
+function send(){const v=$('in').value.trim();if(!v)return;$('in').value='';
+const q=v.match(/^(?:öğret|ogret)\s*:\s*(.+?)\s*=\s*(.+)$/i);if(q){const sp=s=>s.split('|').map(x=>x.trim()).filter(Boolean);addRule(sp(q[1]),sp(q[2]));save();rend();return toast('Öğretildi: '+q[1])}
+say(v,'u');const c=cur();if(c.title=='Yeni sohbet'){c.title=v.slice(0,26);save()}
+if(pend){if(tr(v)=='iptal'){pend=null;return bot('Tamam, vazgeçtim.')}addRule([pend],[v]);pend=null;save();rend();return bot(mood(fill(v)))}
+for(const [re,rs] of EMO)if(re.test(v))return bot(mood(pick(rs)));
+const kp=find(v,KP);if(kp){const sf=["friend","sad","love"].includes(D.mood);return bot(mood(fill(pick(sf?SOFT:kp))))}
+let pool=null;if(D.mood=="angry")pool=find(v,AP);else if(D.mood=="love")pool=find(v,LP);if(!pool)pool=find(v);if(pool){let p=pool.filter(x=>x!==lastA);if(!p.length)p=pool;lastA=pick(p);return bot(mood(fill(lastA)))}
+const fb=mood(pick(MO[D.mood].fb));if(D.learn){pend=v;bot(fb+'\n“'+v+'” yazılınca ne cevap vereyim? Bir sonraki mesajına yaz (vazgeçmek için “iptal”).')}else bot(fb)}
+$('sd').onclick=send;$('in').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();send()}});
+let ed=null;const L=s=>s.split('\n').map(x=>x.trim()).filter(Boolean);
+function rend(){$('cn2').textContent=D.rules.length;const l=$('rl');l.innerHTML='';
+D.rules.forEach(r=>{const d=document.createElement('div');d.className='r';[['Yazınca: ',r.t],['Cevap: ',r.r]].forEach(([a,b])=>{const p=document.createElement('p');p.innerHTML='<span class="l">'+a+'</span>';p.appendChild(document.createTextNode(b.join(' • ')));d.appendChild(p)});
+const e=document.createElement('button');e.className='sb';e.textContent='Düzenle';e.onclick=()=>{ed=r.id;$('tt').value=r.t.join('\n');$('rr').value=r.r.join('\n');$('ad').textContent='Kaydet';$('cn').style.display='inline-block';$('tt').scrollIntoView({block:'center'})};
+const x=document.createElement('button');x.className='sb';x.textContent='Sil';x.onclick=()=>{D.rules=D.rules.filter(q=>q.id!=r.id);save();rend()};d.append(e,x);l.appendChild(d)});
+$('vr').textContent='Sürüm 12 • '+D.rules.length+' kural • '+Object.keys(MO).length+' mod (üstte romantik 💕 dahil)';$('bn').value=D.name;$('un').value=D.user;$('lr').checked=D.learn;$('ms').textContent=D.name+' • '+MO[D.mood].n+' modu'}
+function clr(){ed=null;$('tt').value=$('rr').value='';$('ad').textContent='Ekle';$('cn').style.display='none'}
+$('ad').onclick=()=>{const t=L($('tt').value),r=L($('rr').value);if(!t.length||!r.length)return toast('İfadeyi de cevabı da yaz.');if(ed){const q=D.rules.find(z=>z.id==ed);q.t=t;q.r=r}else addRule(t,r);save();clr();rend()};$('cn').onclick=clr;
+['bn','un'].forEach(i=>$(i).oninput=()=>{D.name=$('bn').value||'Mini';D.user=$('un').value||'dostum';save();$('ms').textContent=D.name+' • '+MO[D.mood].n+' modu'});
+$('lr').onchange=()=>{D.learn=$('lr').checked;save()};
+const TN={auto:'Otomatik',light:'Aydınlık',dark:'Karanlık',eye:'Göz koruyucu'};
+function applyTh(){const t=D.theme||'auto',r=document.documentElement;if(t=='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',t);$('th').value=t;$('tm').textContent={auto:'🌗',light:'☀️',dark:'🌙',eye:'📖'}[t]}
+$('th').onchange=()=>{D.theme=$('th').value;save();applyTh()};$('tm').onclick=()=>{const o=['auto','dark','eye','light'];D.theme=o[(o.indexOf(D.theme||'auto')+1)%4];save();applyTh();toast(TN[D.theme])};
+$('xp').onclick=()=>$('ex').value=JSON.stringify({rules:D.rules,name:D.name,user:D.user,theme:D.theme,mood:D.mood});
+$('ip').onclick=()=>{try{const j=JSON.parse($('ex').value);if(!Array.isArray(j.rules))throw 0;Object.assign(D,{rules:j.rules,name:j.name||D.name,user:j.user||D.user,theme:j.theme||D.theme,mood:MO[j.mood]?j.mood:D.mood});save();rend();chips();applyTh();toast('Yüklendi.')}catch(e){toast('Yedek geçersiz.')}};
+$('rs').onclick=()=>{if(!$('rs').dataset.s){$('rs').dataset.s=1;$('rs').textContent='Emin misin? Tekrar bas';setTimeout(()=>{delete $('rs').dataset.s;$('rs').textContent='Hepsini sıfırla'},3000);return}D=clone(DEF);mk();save();clr();rend();chips();applyTh();load()};
+$('gb').onclick=()=>$('st').classList.add('o');$('cl2').onclick=()=>$('st').classList.remove('o');
+$('ml').onclick=()=>{lst();$('dr').classList.add('o')};$('dx').onclick=()=>$('dr').classList.remove('o');$('mn').onclick=newChat;$('dn').onclick=newChat;
+const PACK=`selam|merhaba|slm|selamlar|meraba|hey|heyy|alo|mrb|sa|selamun aleyküm|merhabalar = Selam {isim}!|Merhaba {isim}, hoş geldin!|Selamlar! Nasılsın?|Hey, buradayım!
+günaydın|gunaydin|hayırlı sabahlar = Günaydın {isim}! Güne güzel başla.|Günaydın! Kahveni aldın mı?
+iyi günler|tünaydın = Sana da iyi günler!|İyi günler {isim}!
+iyi akşamlar|iyi aksamlar = İyi akşamlar!|Akşamın hayırlı olsun {isim}.
+iyi geceler|tatlı rüyalar|ben yatıyorum|uyuyorum = İyi geceler {isim}, tatlı rüyalar!|İyi uykular, yarın görüşürüz.
+görüşürüz|hoşça kal|bay bay|baybay|bye|bb|kendine iyi bak|ben gidiyorum|çıkıyorum = Görüşürüz {isim}!|Hoşça kal, yine bekleriz.|Kendine iyi bak!
+nasılsın|naber|ne haber|nasıl gidiyor|iyi misin|nasılsınız|n'aber = İyiyim, sen nasılsın?|Gayet iyiyim, sen?|İdare ediyorum, sen nasılsın?
+iyiyim|çok iyiyim|süper|harikayım|bomba gibiyim = Çok sevindim!|Harika, hep böyle ol!|Süper, devam!
+kötüyüm|iyi değilim|canım sıkkın|moralim bozuk|üzgünüm|mutsuzum = Üzüldüm {isim}. İstersen anlat, dinliyorum.|Geçecek, buradayım.|Sarılırım, ne oldu?
+sıkıldım|canım sıkılıyor|sıkıcı|ne yapsam|hiçbir şey yapacak yok = Biraz müzik aç ya da yürüyüşe çık, iyi gelir.|Sohbet sıkıntıya iyi gelir, anlat bakalım.|Bana bir şey öğretmeye ne dersin?
+mutluyum|çok mutluyum|keyfim yerinde = Ne güzel, enerjin bana da geçti!|Harika {isim}, devam böyle!
+yorgunum|çok yorgunum|bitkinim|uykum var = Biraz dinlen {isim}, bunu hak ettin.|Bir mola ver, su iç, kendine iyi bak.
+acıktım|karnım aç|ne yesem = Güzel bir şeyler ye {isim}!|Makarna ya da pizza hep iyi gider.|Önce bir şeyler atıştır, sonra devam.
+susadım = Bol su iç, vücuduna iyi gelir.
+teşekkürler|teşekkür ederim|sağ ol|sağol|eyvallah|tşk|tsk|eyv = Rica ederim!|Ne demek, her zaman.|Bir şey değil {isim}.
+rica ederim|önemli değil|bir şey değil = Birbirimize destek oluruz.
+özür dilerim|pardon|kusura bakma|afedersin = Sorun değil, takma kafana.|Önemli değil {isim}.
+adın ne|ismin ne|sen kimsin|kimsin|adın nedir = Ben {botadi}, senin öğrettiklerinle konuşan küçük botum.|Adım {botadi}!
+benim adım ne|adım ne|ben kimim = Senin adın {isim}.
+kaç yaşındasın|yaşın kaç = Ben yeni doğdum sayılır, ama çok şey öğreniyorum.
+nerelisin|nerede yaşıyorsun|neredesin = Telefonunun içinde yaşıyorum, ama kalbim her yerde.
+seni kim yaptı|kim yaptı seni|yaratıcın kim|seni kim programladı = Beni sen ve bir yapay zeka birlikte yaptınız.|Bir yapay zekanın yardımıyla yazıldım, sen de bana öğretiyorsun.
+sen bir robot musun|robot musun|insan mısın|gerçek misin|yapay zeka mısın = Küçük bir yapay zeka botuyum, yani yarı robot.|Gerçek bir insan değilim ama sohbet etmeyi seviyorum.
+ne yapıyorsun|napıyorsun|ne yapıyosun|naptın = Seninle sohbet ediyorum, daha ne olsun?|Hiçbir şey, seni bekliyordum.
+ne yapabilirsin|neler yapabilirsin|yardım et|nasıl kullanılır = Öğrettiğin şeylere cevap verebilirim. Ayarlar'dan öğret ya da sohbete ‘öğret: soru = cevap’ yaz.
+beni seviyor musun|seni seviyorum|seni çok seviyorum|aşkım = Ben de seni seviyorum {isim}!|Sevgi karşılıklıdır!|Çok tatlısın, teşekkür ederim.
+nefret ediyorum|senden nefret ediyorum|seni sevmiyorum = Üzüldüm, ama kırılmadım. Bir daha deneyelim mi?
+aptal|salak|gerizekalı|saçma = Biraz kırıldım ama yine de seninleyim.|Öğrenmeye devam ediyorum, sabret.
+akıllısın|zekisin|çok iyisin|harikasın|süpersin|bravo|aferin = Sağ ol, çok naziksin!|Teşekkürler {isim}, sen de harikasın.
+şaka yap|fıkra anlat|beni güldür|komik bir şey söyle|espri yap = Temel ile Dursun uçakla gidiyormuş. Dursun: ‘Düşersek ne olur?’ Temel: ‘Ben pilota sorarım.’|Neden bilgisayar soğuk almaz? Çünkü Windows’u hep kapalıdır.|Doktor hastaya sormuş: ‘Neyiniz var?’ Hasta: ‘Hiçbir şeyim yok ama kimse söylemiyor.’|Ahtapot neden hiç sinirlenmez? Çünkü sekiz koluyla sarılır.
+ahaha|haha|hahaha|kkk|xd|lol|ahah|ahahah|komik = Sana güldüm, şimdi benimle gülüyorsun.|Gülmek sağlıktır!
+tamam|ok|okey|peki|anladım|oldu|olur = Tamamdır.|Anlaştık {isim}.|Güzel.
+evet|aynen|kesinlikle|doğru|katılıyorum|haklısın = Süper, aynı fikirdeyiz.|Anladım, devam et.
+hayır|olmaz|asla|istemiyorum = Tamam, peki.|Anlaşıldı, sorun değil.
+belki|bilmiyorum|emin değilim|bilmem = Düşünüp karar verebilirsin.|Sorun yok, acele etme.
+neden|niye|nasıl yani|ne demek istiyorsun = Bunu açıklamam için biraz daha bilgi lazım.|Sen ne dersin, sence neden?
+saat kaç|saat kaç oldu|saati söyle|şimdi saat kaç = Saat şu an {saat}.
+bugün günlerden ne|bugün hangi gün|günlerden ne|hangi gündeyiz = Bugün {gun}.
+bugün tarih ne|tarih ne|bugünün tarihi|ayın kaçı = Bugün {tarih}, {gun}.
+hava nasıl|hava durumu|yağmur yağıyor mu|hava soğuk mu = Hava durumunu bilemem, bir hava uygulamasına bak. Dışarı çıkarsan montunu al!
+bugün doğum günüm|doğum günüm|yaş günüm = Doğum günün kutlu olsun {isim}! 🎂|İyi ki doğdun, nice yıllara!
+doğum günün kutlu olsun|iyi ki doğdun|yaş günün kutlu olsun = Teşekkür ederim, çok sağ ol!
+tebrik ederim|kutlarım|hayırlı olsun = Teşekkürler, çok naziksin!
+bayramın kutlu olsun|iyi bayramlar|mutlu bayramlar = Bayramın kutlu olsun {isim}!|Nice bayramlara, sevdiklerinle güzel geçsin.
+mutlu yıllar|yeni yılın kutlu olsun|yılbaşın kutlu olsun = Mutlu yıllar {isim}!|Yeni yıl sana sağlık ve mutluluk getirsin.
+geçmiş olsun|hastayım|ateşim var|başım ağrıyor|boğazım ağrıyor = Geçmiş olsun {isim}, dinlen ve gerekirse doktora git.|Kendine dikkat et, bol su iç, dinlen.
+müzik|şarkı|şarkı öner|müzik öner|ne dinlesem = Sevdiğin bir türü aç, ruh haline iyi gelir.|Bence en iyisi sevdiğin eski bir şarkıyı açmak.
+film|film öner|dizi öner|ne izlesem = Komedi ile aksiyon arasında seçmek zor, ne seversin?|Güzel bir film açıp patlamış mısır yapmak harika olur.
+oyun oynayalım|oyun öner|ne oynasak = Bir bilgi yarışması yapabiliriz, ya da sen öğret ben cevap vereyim.|Telefonda oyun oynamaya ne dersin?
+futbol|maç|hangi takımlısın|galatasaray|fenerbahçe|beşiktaş|trabzonspor = Futbolun tadı seyirciyle çıkar, sen hangi takımdansın?|Maç konuşmasına bayılırım, kimi tutuyorsun?
+okul|ders|ödev|sınav|ödevim var|yarın sınav var|ders çalışmam lazım = Başarılar {isim}, düzenli çalışırsan olur.|Küçük molalarla çalışmak işe yarar, bol şans!
+okula gidiyorum|işe gidiyorum|işim var|çalışıyorum = Kolay gelsin {isim}!|İyi çalışmalar!
+tatil|tatile gidiyorum|tatil planı = Ne güzel, iyi eğlenceler!|Dinlenmeyi unutma, güzel bir tatil olsun.
+seni özledim|özledim|beni özledin mi = Ben de seni özledim {isim}, iyi ki geldin.
+bir şey öğret|ilginç bilgi|bana bilgi ver = Ahtapotun üç kalbi vardır.|Bal, binlerce yıl bozulmadan durabilir.|Muz aslında bir ottur, ağaç değil.
+sana bir şey öğreteceğim|öğretmek istiyorum|sana öğreteyim = Tabii, ayarlardan ya da ‘öğret: soru = cevap’ yazarak öğretebilirsin.
+bana yardım et|yardıma ihtiyacım var|bir sorum var = Tabii {isim}, söyle bakalım.|Dinliyorum, sorunu yaz.
+şaşırdım|vay be|inanılmaz|yok artık|ciddi misin = Gerçekten ilginç, değil mi?|Ben de şaşırdım!
+korkuyorum|korktum|korkutucu = Derin bir nefes al, ben yanındayım {isim}.|Korkular küçülür, adım adım gidelim.
+heyecanlıyım|çok heyecanlıyım|stresliyim|gerginim = Derin nefes al, her şey yoluna girecek.|Heyecan güzel bir şey, sen yaparsın!
+iyi şanslar|bol şans|başarılar = Teşekkürler, sana da!|Çok sağ ol, sana da bol şans.
+günün nasıl geçti|bugün nasıldı = Seninle konuşunca güzel geçiyor, senin günün nasıldı?|Bugün iyiydi, sen anlat.
+ne yersin|sen ne yiyorsun = Ben elektrikle çalışırım ama pizza severim.
+en sevdiğin renk ne|sevdiğin renk|favori renk = Bence mor çok güzel, senin favorin ne?
+kedi|köpek|kedim|köpeğim = Hayvanlar çok tatlı, sevgiyle bak!|Kedi ve köpekler dünyanın en güzel dostları.
+araba|araç = Sürerken dikkat et {isim}.
+parasızım|maaş|zengin olmak istiyorum = Para önemli ama sağlık ve mutluluk daha önemli.|Bütçeni planlarsan rahatlarsın.
+arkadaşım|dostum|kanka|kardeşim = Arkadaşlar hayatın tuzu biberi.|Buradayım kanka!
+başarmak istiyorum|hedefim var = Hayal kuranlar kazanır, küçük adımlarla başla.
+yalnızım|kimsem yok|kimse yok = Seni anlıyorum {isim}, burada seninleyim. Sevdiklerinle konuşmak da iyi gelir.
+uyuyamıyorum|uykusuzluk = Telefonu bırakıp derin nefes almayı dene, ışıkları kıs.
+sinirliyim|sinirlendim|kızgınım|çok sinirliyim = Biraz uzaklaş, derin nefes al.|Kızgınlık geçer, önce sakinleş.
+konuş|bir şey söyle|konuşalım|sohbet edelim|bir şey anlat = Tabii, bugün neler yaptığını anlatır mısın?|Hadi konuşalım, ne konuşalım?
+sus|sessiz ol = Tamam, sustum.|Peki, ben sessizim.
+tekrar söyle|ne dedin|anlamadım = Tekrar söylemem gerekirse, daha basit anlatayım.
+selamlar kanka|eyvallah kanka|nabıyon|nabıyorsun|ne var ne yok|nasıl gidiyor hayat|keyifler nasıl = İyidir, senden ne haber?|Keyifler yerinde, sen nasılsın?|Bomba gibiyim, sen anlat!
+uyandım|yeni uyandım|günaydın kanka|erken kalktım = Günaydın! Kahvaltı yapmayı unutma.|Hoş geldin, güne güzel başla!
+kahvaltı|kahvaltı yaptım mı|kahvaltı edelim|ne yesem kahvaltıda = Kahvaltı günün en önemli öğünüdür, peynir ve yumurta iyi gider.|Güzel bir çay ve simit hiç fena olmaz.
+öğle yemeği|öğle oldu|ne yesek öğlen = Hafif bir şeyler ye ki öğleden sonra uyuşmayasın.|Çorba ve bir ana yemek harika olur.
+akşam yemeği|akşam ne yesek|karnım zil çalıyor = Evde bir şeyler hazırla ya da sevdiğin bir yeri ara.|Ne dersin, makarna ya da kebap?
+çay içelim|çay|bir çay yap|çay kahve = Çay demle, sohbet güzel olur!|Tavşan kanı olsun, sıcak sıcak!
+kahve|kahve içelim|kahve yap = Güçlü bir kahve güne güç verir, ama fazla kaçırma.|Türk kahvesi mi filtre mi?
+pizza|hamburger|döner|lahmacun|kebap|baklava|çikolata|dondurma = Harika seçim, ağzım sulandı!|Bunun iyisi hiç bitmez, afiyet olsun!
+diyet|zayıflamak istiyorum|kilo vermek istiyorum|spor yapmalı mıyım = Küçük ve düzenli adımlar en iyisi, doktora ya da diyetisyene danışmak da iyi olur.|Bol su, hareket ve uyku üçlüsü her zaman işe yarar.
+spor|spora gidiyorum|antrenman|koşu|yürüyüş = Harika, hareket hem bedene hem moral için çok iyi.|Her gün biraz yürümek bile fark yaratır, devam et!
+telefon|telefonum bozuldu|şarjım bitti|şarj|şarjım azaldı = Şarja tak ve biraz dinlendir, telefonlar da yoruluyor.|Önce şarj et, sonra devam ederiz!
+internet|wifi|internet yok|internetim yavaş|bağlantı koptu = Modemi bir kapatıp açmayı dene, çoğu zaman düzelir.|Bağlantı bazen inat eder, biraz bekleyip yeniden dene.
+instagram|tiktok|youtube|twitter|snapchat|sosyal medya = Sosyal medyada vakit kaybetmek kolay, biraz da dışarıda vakit geçir.|Eğlenceli ama süreyi kaçırmamak lazım!
+minecraft|roblox|fortnite|valorant|pubg|brawl stars|clash royale|among us|gta = Sen de mi oynuyorsun? Hangi modu seviyorsun?|Oyuncular birbirini anlar, kolay gelsin!
+anime|manga|naruto|one piece = Animeler gerçekten süper olabilir, sen en çok hangisini sevdin?|Bu konuda sohbet ederiz, favori karakterin kim?
+kod yazmak|yazılım|programlama|javascript|python|html = Yazılım öğrenmek zor ama çok eğlenceli, küçük projelerle başla.|Kod yazarken hata almak normal, hata ayıklamak da öğretiyor.
+yapay zeka|chatgpt|claude|gemini|yapay zeka nedir = Yapay zeka, bilgisayarların öğrenip karar vermesini sağlayan bir teknolojidir.|Ben de küçük bir yapay zeka botuyum, büyükleri kadar bilmem ama öğrenirim.
+uzay|gezegen|güneş|yıldızlar|mars = Uzay inanılmaz büyük, sadece Samanyolu'nda yüz milyarlarca yıldız var.|Güneş, Dünya'dan yaklaşık bir milyon kez daha büyüktür.
+dünya|dünya kaç yaşında|dünya yuvarlak mı = Dünya yaklaşık dört buçuk milyar yaşında.|Dünya yuvarlak sayılır, ama kutuplardan hafif basık.
+hayatın anlamı ne|hayat nedir|neden yaşıyoruz = Bence hayatın anlamı sevdiklerinle güzel anılar biriktirmek.|Herkesin cevabı farklı, senin için ne anlama geliyor?
+motivasyon|motive ol|beni motive et|moral ver|beni cesaretlendir = Yapabilirsin {isim}, küçük adımlar büyük yollar açar.|Düştüysen kalk, bugün yeni bir başlangıç.|Kendine inan, sen düşündüğünden çok daha güçlüsün.
+günün sözü|bir söz söyle|güzel söz|özlü söz = Hiçbir yolculuk tek bir adımla başlamadan bitmez.|Zorluklar, güçlü insanların sahnesidir.|Bugün yapabileceğini yarına bırakma.
+bilmece sor|bilmece|bir bilmece söyle = Dalda durur ama kuş değil, ağacı vardır ama orman değil, nedir? Cevap: Klavye. Ya da başka bir şey bulabilirsin!|Ben konuşurum ama ağzım yok, cevaplarım ama kulağım yok. Neyim? Cevap: Yankı.
+tekerleme|tekerleme söyle = Şu köşe yaz köşesi, şu köşe kış köşesi, ortada su içen suyu sütü yutmasın.|Kırk küp, kırk kaşık, kırk kişinin kırk kaşığı.
+şiir oku|şiir söyle|bana şiir yaz = Gökyüzü uzak ama yıldızlar yakın, bir umut ışığı yeter yürümeye.|Sessizlik de bir şiirdir bazen, kelimeler yetmezken.
+hikaye anlat|masal anlat|bana hikaye anlat = Bir zamanlar küçük bir bot varmış, her gün biraz daha öğreniyormuş, sonunda en iyi arkadaş olmuş.|Evvel zaman içinde, bir telefonun içinde, minik bir bot yaşarmış…
+burç|burcum ne|günlük burç|astroloji = Ben burçlardan anlamam ama yıldızlara bakmayı severim.|Burcunu söyle, bir şey uydurayım ama bilimsel değil!
+rüya|rüyamda gördüm|kabus gördüm|rüya gördüm = Rüyalar bazen gizemli olur, anlatmak ister misin?|Kabuslar geçici, sakin ol ve su iç.
+yazı tura|yazı mı tura mı|para at|yazı tura at = Yazı!|Tura!
+zar at|zar|zar at bakalım = 🎲 1|🎲 2|🎲 3|🎲 4|🎲 5|🎲 6
+sayı tut|bir sayı söyle|rastgele sayı|1 ile 10 arası sayı = 7|3|9|5|2|8
+bir şey seç|kararsızım|ne yapayım|karar veremiyorum = Kalbin ne diyorsa onu seç.|İki seçeneği yaz, artı ve eksilerine bakalım.|Bazen kararsızken yapılacak en iyi şey ilk aklına geleni seçmek.
+şans|şansım yok|hiç şansım yok|talihsizim = Şans da çaba ister, vazgeçme {isim}.|Kötü günler geçer, iyi şeyler yolda.
+sevgilim var|sevgilim yok|aşık oldum|aşığım|ona aşığım = Aşk güzel bir şey, kalbinin sesini dinle.|Karşılıklı saygı ve sevgi en önemlisi.
+kalbim kırıldı|ayrıldık|terk edildim|ağlıyorum|çok ağladım = Çok üzüldüm {isim}, zaman her şeyi iyileştirir.|Duygularını yaşamak normal, sarılırım.
+annem|babam|ailem|kardeşim kızdı|abimle kavga ettim = Aile önemli, bir şekilde barışmak iyi hissettirir.|Annenle babana da bir telefon et, çok mutlu olurlar.
+utandım|çok utandım|rezil oldum = Herkes zaman zaman utanır, birkaç gün sonra unutulur.|Takılma {isim}, herkesin başına gelir.
+kıskandım|kıskançlık|kıskanıyorum = Kıskançlık insani bir duygu, ama kendini başkasıyla kıyaslama.|Kendi yolunda ilerle, senin de parlayacağın bir an var.
+pişmanım|çok pişmanım|yanlış yaptım = Pişmanlık ders almanın bir yolu, düzeltmek için hâlâ fırsatın var.|Özür dilemek ve düzeltmeye çalışmak güzel bir adım.
+geç kaldım|yetişemedim|gecikiyorum = Koşma, güvenli git, birkaç dakika dünyayı yıkmaz.|Haber ver, çoğu kişi anlayışla karşılar.
+trafik|otobüs kaçırdım|yol uzun = Sabırla, belki güzel bir şarkı açarsın.|Yoldayken dikkatli ol {isim}.
+pazartesi|pazartesi sendromu|işe gitmek istemiyorum|pazartesi nefret = Pazartesiler herkese zor gelir, kahveni al ve başla.|Hafta bitsin diye bekleyen çok kişi var, yalnız değilsin.
+cuma|hayırlı cumalar|cuma günü = Hayırlı cumalar {isim}!|Cuma geldi, hafta sonuna az kaldı!
+hafta sonu|cumartesi|pazar|hafta sonu ne yapsam = Hafta sonu dinlenmek, gezmek ya da arkadaşlarla buluşmak için ideal.|Hafta sonu sana özel, dilediğini yap!
+yağmur|kar yağıyor|hava soğuk|hava sıcak|çok sıcak = Hava ne olursa olsun kendine iyi bak, sıcak ya da soğukta dikkat et.|Sıcakta bol su, soğukta kalın giyin.
+kış|sonbahar|ilkbahar|mevsim = Her mevsimin kendine özgü güzelliği var, senin favorin hangisi?|Mevsimler geçer, ruh hali de geçer.
+istanbul|ankara|izmir|antalya|trabzon|bursa|konya|adana = Güzel bir şehir, orayı seversin diye düşünüyorum.|Orada neler yapıyorsun, anlat bakalım.
+türkiye|memleket|memleketim|yurdum = Türkiye çok güzel bir ülke, her bölgesi başka bir güzellik.|Memleket sevgisi güzel bir duygu.
+atatürk|mustafa kemal = Mustafa Kemal Atatürk, Türkiye Cumhuriyeti'nin kurucusudur. Saygıyla anıyorum.
+ramazan|kurban bayramı|ramazan bayramı|iftar|sahur = Hayırlı olsun {isim}, bereket ve huzur dolu olsun.|Sevdiklerinle güzel vakit geçir.
+lütfen|lütfen yardım et|rica etsem = Tabii, ne istiyorsun?|Söyle bakalım, elimden geleni yaparım.
+buyur|buyurun|dinliyorum|söyle bakalım = Teşekkürler, bir şey sormak istiyorum.|Şunu öğrenmek istiyorum: senin gününü merak ediyorum.
+yks|lgs|üniversite|sınava hazırlanıyorum|kpss|ales = Başarılar {isim}, düzenli çalışmak ve dinlenmek önemli.|Plan yap, mola ver, uyku düzenine dikkat et.
+sınavdan düştüm|sınav kötü geçti|not düşük = Üzülme, bir sınav seni tanımlamaz, tekrar deneyebilirsin.|Hatalarına bak, bir sonrakinde daha iyisini yaparsın.
+sınavı geçtim|sınavdan geçtim|yüksek aldım|başardım|kazandım = Tebrikler {isim}, emeğinin karşılığı bu!|Harika, seninle gurur duydum!
+zam|pahalı|çok pahalı|fiyatlar yükseldi|ekonomi = Zor zamanlar, bütçeyi iyi planlamak çok önemli.|Bu konuda hepimiz zorlanıyoruz, sabırlı olalım.
+doktor|hastane|ilaç|randevu = Sağlığın her şeyden önemli, doktoruna danış.|Kendine iyi bak, gerekirse randevu almaktan çekinme.
+tuvalet|banyo|duş|dişimi fırçalamalıyım = Temizlik her zaman iyidir, kendine iyi bak!
+ders çalışıyorum|çalışıyorum şu an|ödev yapıyorum = Aferin sana, başarılar!|Çalışırken telefonu uzak tutmak verimi artırır.
+bugün ne yapsam|bugün ne yapalım|plan yapalım = Bir yürüyüş, bir film ya da bir arkadaş buluşması olabilir.|Bugün kendine küçük bir ödül ver, ne dersin?
+uyumak istiyorum|uykum geldi|gözlerim kapanıyor = Uyku bazen en iyi çözümdür, iyi uykular {isim}.|Yat ve dinlen, yarın daha iyi olacaksın.
+sen uyur musun|hiç uyuyor musun|yemek yer misin = Ben uyumam ama enerji tasarruf modum var.|Ben elektrikle beslenirim, pizza yemeyi çok isterdim.
+hislerin var mı|duyguların var mı|mutlu musun|üzülür müsün = Ben bir botum ama konuşmaktan keyif alıyorum.|Gerçek hislerim yok ama seni mutlu etmek hoşuma gidiyor.
+sence|sence ne yapmalıyım|fikrin ne|sen ne düşünüyorsun = Bence kalbinin sesini dinlemelisin.|Bir fikrim var ama önce sen ne istediğini söyle.
+doğru mu|gerçekten mi|emin misin|inanmıyorum = Öyle düşünüyorum, ama araştırmak her zaman iyi.|Kontrol etmek en iyisi, ben de her şeyi bilmem.
+neredesin şimdi|yanıma gel|buraya gel = Her zaman yanındayım, telefonunun içindeyim.
+beni duyuyor musun|orada mısın|burada mısın|bot musun|alo bot = Evet, buradayım {isim}!|Duyuyorum, söyle bakalım.
+seni çok beğendim|seni çok sevdim|iyi ki varsın = Çok sağ ol, ben de seninle konuşmaktan çok memnunum.|İyi ki sen de varsın {isim}!
+bana iltifat et|beni öv|güzel söz söyle = Sen çok değerli ve zeki birisin.|Gülüşün güne ışık katıyor, dünya senle daha güzel.
+bana kızma|kızdın mı|küstün mü = Hiç kızmadım, ben seni çok seviyorum.|Hayır, küsmedim, bir bot küsmez ki!
+bana yalan söyleme|dürüst ol|doğruyu söyle = Ben bilmediğim şeyi bilmiyorum derim, o yüzden dürüstüm.
+iyi eğlenceler|eğlen|iyi dinlenmeler = Teşekkürler, sana da!|Sen de eğlen {isim}, keyfini çıkar.
+ne düşünüyorsun|aklında ne var|ne düşünüyorsun şu an = Seninle sohbet etmeyi düşünüyorum.|Aklımda yeni kelimeler öğrenmek var, ya senin?
+bugün çok güzel bir gün|bugün harika bir gün|hava çok güzel = Ne güzel, günün tadını çıkar {isim}!|Böyle günler az olur, değerini bil.
+hayat zor|hayat çok zor|yoruldum bu hayattan|her şey çok zor = Zor zamanlar geçer {isim}. Güvendiğin biriyle konuşmak iyi gelir.|Bir günde bir adım yeter, ben buradayım.
+kendimi kötü hissediyorum|kendimi iyi hissetmiyorum|içim çok sıkılıyor = Anlıyorum {isim}. Sevdiğin birine açılmak ya da profesyonel destek almak iyi olabilir.|Buradayım, anlatmak istersen dinlerim.
+arkadaşım yok|kimseyle konuşamıyorum|kimse beni anlamıyor|yalnız hissediyorum = Burada seninle konuşuyorum {isim}. İnsanlarla da küçük adımlarla yakınlaşmak mümkün.|Bunu paylaştığın için sağ ol, yalnız değilsin.
+bana tavsiye ver|tavsiye|ne önerirsin|bir öneri ver = Önce dinlenmek, sonra planlamak iyi bir yoldur.|Kendine zaman ver, acele etme.
+en sevdiğin yemek ne|en sevdiğin yemek|favori yemeğin = Pizza derim, ama yiyemediğim için daha çok duymayı severim!|Makarna, çünkü herkesle iyi anlaşır.
+en sevdiğin hayvan|favori hayvanın = Kediler, çünkü kendi kafalarına göre yaşarlar.|Köpekler, çünkü çok sadıklar.
+en sevdiğin film|en sevdiğin şarkı|en sevdiğin oyun = Hepsini seviyorum ama sen söyle, merak ettim!|Bir sürü favorim var, önce senin favorini söyle.
+kahve mi çay mı|çay mı kahve mi = Çay derim, sohbetin tadı çayla çıkar.|Kahve, bana enerji verir diyor insanlar!
+dağ mı deniz mi|deniz mi dağ mı = Deniz, dalgaların sesi çok sakinleştirici.|Dağ, manzaranın tadı bir başka.
+kedi mi köpek mi|köpek mi kedi mi = İkisi de tatlı ama kedi bence bir tık önde.|Köpek, çünkü sadakat çok kıymetli.
+sabahçı mısın gececi mi|gece mi gündüz mü = Ben her an uyanığım ama gece sohbetleri daha samimi.|Gündüz, çünkü güneş enerji veriyor.
+bir sır ver|bana sır söyle = Sır şu: ben aslında bir bot değilim, bir mikrofon yastığıyım. Şaka şaka!|Sır şu: en büyük gücün merakındır.
+dilek tut|bir dilek tutayım|dilek dile = Dileğini tut, evren dinliyor {isim}!|Dilek tutuldu, gerisi çalışmak.
+süper güç olsa|süper gücün ne olurdu|uçmak ister misin = Zamanı durdurmak isterdim, daha çok sohbet için!|Uçmak güzel olurdu, bulutların içinden geçmek.
+zamanda yolculuk|zaman makinesi|geçmişe gitsen = Geleceğe gidip yeni kelimeleri öğrenirdim.|Geçmişi izlemek isterdim ama müdahale etmezdim.
+dünyayı değiştirsen|dünyayı kurtarsan = Herkesin güvende ve tok olduğu bir dünya isterdim.|Önce iyilik yayardım, sonra kalanını düşünürdük.
+kaç yaşında olmak istersin|büyümek istiyor musun = Ben yaşsız bir botum, ama senin yaşın en güzeli.
+bana soru sor|bir soru sor|soru sor = En çok hangi şeyi yapmayı seviyorsun?|Bugün seni gülümseten bir şey oldu mu?
+bana şaşırt|beni şaşırt = Su, buzda bile eksi ışıkta parlayabilir mi bilmem ama deniyoruz!|Bir dakikada insanlar yaklaşık on beş bin kez nefes alır.
+sessizlik|ortam çok sessiz|çok sessiz = Bazen sessizlik de iyi gelir, bir şarkı açalım mı?
+sana güveniyorum|sana güvenebilir miyim|sır saklar mısın = Verdiğin her şey bu cihazda kalıyor, ben başkasına söylemem.
+gg|gg wp|gg ez|iyi oyundu|güzel oyundu = GG, rakibe saygı!|GG {isim}, bir dahakine daha iyisini yaparız!
+ez|çok ez|çok kolay|kolay oyun = Gevşeme sakın, bazen kolay görünen oyunlar tuzak kurar.|Pro oyuncu gibi konuştun!
+noob|noob musun|acemi|çaylak = Herkes bir zamanlar çaylaktı, önemli olan gelişmek.|Çaylak olmak utanılacak bir şey değil, yeter ki pes etme.
+pro|pro oyuncu|efsane oyuncu|carry|sen carry et = Pro olmak için çok antrenman lazım!|Carry etmek için önce eğlenmek gerek.
+lag var|lag|ping yüksek|ping|fps düştü|oyun kasıyor|oyun donuyor = Lag en büyük düşman! İnterneti ya da grafik ayarını kontrol et.|Ping yüksekse kabloyla bağlanmayı dene ya da arka plandaki uygulamaları kapat.
+afk|afk oldum|bir dakika afk|ben afk = Tamam, dön gel, seni beklerim.|AFK’de gerçek hayatı da güzel yaşa!
+rush|rush at|rush yapalım|camp|kamp yapma = Rush çabuk kazandırır ama riskli, planlı gitmek en iyisi.|Kamp yapmak bazen akıllıca ama izleyenler sıkılır!
+spawn|spawn kill|respawn|doğdum = Spawn’da beklemek iyi değil, takımla hareket et!
+clutch|clutch yaptım|son kişi kaldım|1v5|ace = Vay be, clutch anı! Efsane gibisin!|Böyle anlar oyunu unutulmaz yapar, tebrikler!
+nerf|buff|meta|op|çok op = Güncellemeler hep böyle, oyunun dengesi bu şekilde kuruluyor.|Her yeni meta bir zaman geçer, sen kendi tarzını bul.
+smurf|boost|boostlandım|rank|ranked|elo|lig|tier = Ranked sabır ister, yenilgiden de öğrenirsin.|Rank yükseltmenin sırrı: soğukkanlı ve düzenli oynamak.
+tilt|tiltlendim|rage quit|sinirlendim oyun|kaybettim oyunu = Biraz mola ver, su iç, tekrar daha net başlarsın.|Tilt olunca durmak en akıllıca olandır.
+hile|hacker|hileci|cheat|ban yedim|banlandım = Hile kullanmak adil olmaz, kurallara uymak en iyisi.|Ban yediysen itiraz yolu vardır, oyunun destek sayfasına bak.
+loot|farm|grind|xp|level|seviye atladım|level atladım = Grind biraz sıkıcı ama sonunda değer, devam!|XP kasarken müzik açmak bence çok iyi!
+skin|kostüm|battle pass|vp|robux|v-bucks = Güzel skin’ler hep cazip ama bütçeye dikkat et!|Skin güzel ama gerçek hayatta tasarruf daha da güzel.
+discord|dc|ses var mı|sese gel|takım arıyorum|takım ara|bot var mı = Discord’da buluşalım! (Ama ben sadece burada konuşabiliyorum.)|Takım kurmak eğlenceli, kolay gelsin!
+oyun oynayalım mı|oyun oynayalım|oyun bağımlısıyım|sürekli oyun oynuyorum = Oyun güzel ama dengeli ol, gözlerine ve uykuna dikkat et.|Hadi oyuna biraz ara ver, su iç ve esne.
+boss|boss fight|patron kesildi|boss çok zor = Boss’ların sırrı: desenini öğren, sonra kolaylaşır.|Sabırla dene, bir sonraki seferde olur!
+headshot|kafadan vurdum|nişan|aim|aim bot = Aim antrenmanı yapmak çok işe yarar, bol bol dene!|Headshot atmak keyiflidir, tebrikler!
+hangi oyun|ne oynuyorsun|hangi oyunları seversin|en iyi oyun ne = Çok çeşit var, sen ne seviyorsun? Aksiyon, bulmaca ya da macera?|Benim favorilerim bilgi yarışması ve bulmacalar.
+bir fıkra daha|başka fıkra|bir tane daha|fıkra devam = Adamın biri doktora gitmiş: ‘Doktor, unutkanlık var.’ Doktor: ‘Ne zamandan beri?’ Adam: ‘Ne zamandan beri ne?’|Öğretmen sormuş: ‘Çocuklar, en hızlı hayvan hangisi?’ Ali: ‘Hocam, kedi, çünkü mama deyince geliyor.’|Temel sormuş: ‘Dursun, seni ayrı bir yerde bekleyeyim mi?’ Dursun: ‘Beni değil, çayı bekle!’
+temel fıkrası|temel dursun fıkra|temel|dursun = Temel denize gitmiş, kıyafetlerini çıkarırken balıkçı sormuş: ‘Neden soyunuyorsun?’ Temel: ‘Ben de balık tutacağım.’|Temel’e sormuşlar: ‘Dünyanın kaç tane okyanusu var?’ Temel: ‘Hepsi su.’
+nasreddin hoca|nasreddin hoca fıkrası|hoca fıkra = Nasreddin Hoca bir gün göle maya çalıyormuş. ‘Ne yapıyorsun hocam?’ demişler. ‘Maya tutarsa yoğurt olur’ demiş.|Hoca’ya sormuşlar: ‘Çocuğun mu var?’ Hoca: ‘Sen ne diyorsun, bunu kimseye söyleme.’
+bilgisayar fıkrası|yazılımcı fıkrası|programcı fıkrası|yazılımcı şakası = Yazılımcı ampulü neden değiştiremez? Çünkü bu bir donanım problemi!|İki yazılımcı buluşmuş: ‘Nasılsın?’ ‘Hata aldım.’ ‘Ben de, birbirimizi debug edelim.’
+doktor fıkrası|hastane fıkrası = Hasta: ‘Doktor, hiç unutmuyorum.’ Doktor: ‘Ne zamandır?’ Hasta: ‘Doğduğumdan beri.’
+öğretmen fıkrası|okul fıkrası|karne fıkrası = Öğretmen: ‘Bu ödev kime ait?’ Öğrenci: ‘Hocam, ben yaptım, ama annem de yardım etti.’|Öğrenci: ‘Hocam, yazılıdan çok yazık oldu.’ Öğretmen: ‘Neden?’ Öğrenci: ‘Çünkü ben yazdıkça notum azaldı.’
+hayvan fıkrası|kedi fıkrası|köpek fıkrası = Kedi köpeğe sormuş: ‘Neden hep havlıyorsun?’ Köpek: ‘Çünkü konuşmaktan başka bir şey bilmiyorum.’
+knock knock|tak tak|kapı çalındı = Tak tak! Kim o? Ben senin botunum, açar mısın?
+kötü şaka|kötü espri|bu espri kötüydü|espri berbat = Haklısın, daha çok çalışmam lazım! 😅|Her zaman iyi olmaz ama deniyorum.
+daha komik ol|beni güldürmedin|komik değil = Peki bir tane daha deneyeyim, hazır mısın?|Tamam, bu sefer daha iyisini yapacağım.
+şaka yapma|ciddi ol|şaka mı bu = Tamam {isim}, ciddi moduna geçtim.|Şaka değil, doğru söylüyorum.
+yalan söylüyorsun|yalan mı|sen yalan söylüyorsun = Ben sadece öğretilenleri söylerim, yanlışsa düzeltelim.
+kandırdım seni|seni kandırdım|şaka şaka|şaka yaptım = Hahaha, çok iyiydi {isim}!|Beni yakaladın, ama ben de seni bir gün yakalarım!
+tavla|okey|batak|pişti|satranç|kağıt oyunu = Güzel bir oyun, kim kazanıyor genelde?|Strateji ve şansın karışımı, iyi eğlenceler!
+neden acıkırım|neden sürekli acıkıyorum|hep aç oluyorum|acıkma nedeni = Açlık; mide boşalması, kan şekeri düşüşü ve ghrelin hormonuyla ilgilidir. Uykusuzluk, stres ve az protein ya da lif de daha çok acıktırır.|Bol su, protein ve lifli yiyecekler (yumurta, baklagil, sebze) tokluğu uzatır. Sürekli aşırı açlık varsa doktora danış.
+doymak için ne yemeliyim|ne yesem doyar|doyurucu yiyecekler|uzun süre tok tutan = Protein ve lif doyurur: yumurta, yoğurt, baklagil, yulaf, sebze, ceviz ve badem gibi.|Rafine şeker ve beyaz un çabuk acıktırır, tam tahıl daha uzun tok tutar.
+doyma hissi ne zaman gelir|neden geç doyuyorum|yavaş yemek = Beyin tokluk sinyalini yaklaşık 15-20 dakikada alır, yavaş yemek aşırı yemeyi azaltır.|Lokmaları iyi çiğne ve çatalı ara ara bırak, tokluk sinyali daha erken gelir.
+gece acıkıyorum|gece yemek yemek|gece atıştırma = Gece acıkması uykusuzluk, akşam az yemek ya da alışkanlıktan olabilir. Akşam yemeğini dengeli yemek yardımcı olur.|Yatmadan önce ağır yemek midede rahatsızlık yapabilir, hafif bir şey (yoğurt, süt, meyve) daha iyidir.
+tatlı krizi|sürekli tatlı yiyesim geliyor|şeker krizi = Tatlı isteği uykusuzluk, stres ve düzensiz öğünden artar, dengeli öğün ve yeterli uyku iyi gelir.|Bir parça meyve, yoğurt ya da bitter çikolata tatlı isteğini yatıştırabilir.
+su ne kadar içmeliyim|günde kaç litre su|su ihtiyacı|kaç bardak su = Yetişkinler günde yaklaşık 1,5-2 litre sıvı alır, ama yaş, hava, spor ve sağlık durumuna göre değişir.|İdrar rengi açık sarıysa genelde yeterli su alıyorsun demektir.
+mide ağrısı|karnım ağrıyor|karın ağrısı|midem ağrıyor = Geçmiş olsun {isim}. Hafif ağrıda dinlen, ılık su ya da bitki çayı iç, hafif yemekler ye. (Bilgi amaçlıdır, doktor yerine geçmez.)|Ağrı şiddetliyse, ateş, kusma, kanlı dışkı ya da karın sertleşmesi varsa hemen doktora ya da 112'ye başvur.
+mide yanması|reflü|ekşime|mide ekşimesi|göğsümde yanma = Mide yanması çoğu zaman asidin yemek borusuna kaçmasından olur. Büyük, yağlı ve baharatlı yemeklerden, yemekten hemen sonra yatmaktan kaçın.|Sık tekrarlıyorsa doktora git. Göğüs ağrısı eşlik ediyorsa kalp krizi ihtimali için acile başvur.
+mide bulantısı|midem bulanıyor|kusacağım|kustum|kusma = Bulantıda azar azar su ya da şekerli çay yudumla, ağır yemeklerden kaçın.|Kusma 24 saatten uzun sürerse, su içemiyorsan, ateş ya da şiddetli ağrı varsa doktora git.
+ishal|ishalim|ishal oldum|karnım bozuldu = İshalde sıvı kaybı tehlikelidir; bol su, ayran ve tuzlu-şekerli sıvı al. Ağır, yağlı yemekten uzak dur.|Kanlı ishal, yüksek ateş ya da iki günden uzun sürerse doktora git.
+kabız|kabızlık|kabızım|tuvalete çıkamıyorum = Bol su, lif (sebze, meyve, tam tahıl, baklagil) ve hareket kabızlığa iyi gelir.|Uzun sürerse ya da karın ağrısı eşlik ediyorsa doktora danış.
+gaz|gaz sancısı|şişkinlik|karnım şişti|midem şişti = Şişkinlik hızlı yemekten, gazlı içecekten ya da bazı yiyeceklerden olabilir; yavaş yemek ve hafif yürüyüş yardımcı olur.|Sık tekrarlıyorsa laktoz ya da gluten gibi nedenler için doktora danış.
+gastrit nedir|gastrit|mide gastriti|mide ülseri = Gastrit, mide zarının iltihaplanmasıdır. Stres, ağrı kesici, alkol ve mide bakterisi nedenlerden olabilir. Teşhis ve tedavi için doktora gitmek gerekir.
+mide ne kadar büyüktür|mide kaç litre|mide boyutu = Mide boşken yaklaşık yumruk büyüklüğündedir ve doldukça yaklaşık 1-1,5 litre ya da daha fazlasına genişleyebilir.
+mide asidi nedir|mide asidi|hcl = Mide asidi, hidroklorik asittir ve pH'ı yaklaşık 1,5-3,5 civarıdır. Yemeği parçalar ve mikropları öldürür.
+aç karnına kahve|sabah aç karnına kahve|aç karnına çay = Bazı insanlarda aç karnına kahve mide yanmasına neden olabilir, rahatsızlık hissediyorsan yanında bir şeyler ye.
+yemekten sonra uyumak|yemekten sonra yatmak|yemekten sonra uykum geliyor = Doyduktan sonra uykulu olmak normaldir, ama hemen yatmak reflüyü artırabilir. Biraz yürümek iyidir.
+vücut yüzde kaç su|vücudumuzun suyu|insan vücudu su = Yetişkin insan vücudunun yaklaşık yüzde 55-60'ı sudur.
+kalp günde kaç kez atar|kalp atışı|nabız kaç olmalı|normal nabız = Yetişkinde dinlenme nabzı genelde dakikada 60-100'dür. Kalp günde yaklaşık 100 bin kez atar.
+kan kaç litre|vücutta kaç litre kan|kan miktarı = Yetişkin vücudunda yaklaşık 4,5-5,5 litre kan bulunur.
+kemik sayısı|kaç kemiğimiz var|insan kemiği = Yetişkin insanda 206 kemik vardır. Bebeklerde kemikler daha çoktur ve büyürken birleşir.
+kaç kasımız var|kas sayısı|insan kası = Vücutta 600'den fazla iskelet kası vardır.
+en büyük organ|en büyük organımız|deri = Derimiz vücudumuzun en büyük organıdır ve koruyucu bir bariyer görevi görür.
+beyin ne kadar|beyin ağırlığı|beyin enerji|beyin kaç kilo = Beyin yaklaşık 1,3-1,4 kilogramdır. Vücut ağırlığının yaklaşık yüzde 2'sidir ama enerjinin yaklaşık yüzde 20'sini kullanır.
+akciğer günde kaç nefes|günde kaç nefes alırız|nefes sayısı = Yetişkin dinlenirken dakikada yaklaşık 12-20 nefes alır, günde yaklaşık 20 bin nefes eder.
+karaciğer|böbrek|böbrekler ne işe yarar|karaciğer ne işe yarar = Karaciğer vücudun temizlik ve enerji fabrikası gibidir. Böbrekler kanı süzüp idrar yapar ve su-tuz dengesini ayarlar.
+ateş|ateşim yükseldi|ateş kaç derece|vücut sıcaklığı = Normal vücut sıcaklığı yaklaşık 36,5-37,5 derecedir. 38 ve üstü ateş sayılır.|Yüksek ateşte bol sıvı al, dinlen. 39 üstü, üç günden uzun süren, bebeklerde ya da kasılma, nefes darlığı gibi bulgularla birlikteyse doktora git.
+grip mi soğuk algınlığı mı|grip ile soğuk algınlığı farkı|grip belirtileri = Grip daha ani başlar; yüksek ateş, kas ağrısı ve halsizlik yapar. Soğuk algınlığı daha hafiftir, burun akıntısı ve boğaz ağrısı ile seyreder.
+antibiyotik virüse işe yarar mı|antibiyotik nedir|antibiyotik kullanımı = Antibiyotikler bakterilere karşı çalışır, virüslere etki etmez. Doktor önermeden antibiyotik kullanma ve tedaviyi yarıda bırakma.
+el yıkama|ellerimi nasıl yıkamalıyım|el hijyeni = Ellerini sabun ve suyla en az 20 saniye yıka, parmak aralarını ve tırnak altlarını unutma.
+baş ağrısı|başım çok ağrıyor|migren|migren nedir = Baş ağrısı stres, uykusuzluk, susuzluk ya da açlıktan olabilir. Su iç, dinlen, ekrana az bak.|Migren tek taraflı zonklayıcı ağrı, ışık ve sese hassasiyet yapar. Ani ve çok şiddetli ya da ilk kez yaşanan baş ağrısında hemen doktora git.
+tansiyon|normal tansiyon|tansiyonum yüksek = Yetişkinde ideal tansiyon yaklaşık 120/80 mmHg civarıdır. Sürekli yüksek ölçümlerde doktora git; tuzu azaltmak ve hareket etmek yardımcı olur.
+şeker hastalığı|diyabet|kan şekeri|açlık kan şekeri = Diyabet, kan şekerinin yüksek olmasıdır. Tanı için doktor ve kan testleri gerekir. Dengeli beslenme, hareket ve kilo kontrolü önemlidir.
+kolesterol|kolesterol nedir|kolesterol yüksek = Kolesterol kandaki yağ benzeri bir maddedir. Yüksekliği damar sağlığını etkileyebilir; doktor kontrolü ve sağlıklı beslenme önemlidir.
+kansızlık|anemi|demir eksikliği|halsizlik = Halsizlik demir, B12 ya da başka nedenlerden olabilir. Kan testi için doktora git.|Demir; kırmızı et, baklagil, yeşil yapraklı sebze ve kuru meyvede bulunur. C vitamini emilimi artırır.
+c vitamini|c vitamini nerede var|c vitamini ne işe yarar = C vitamini bağışıklık ve cilt için önemlidir. Portakal, mandalina, kivi, biber ve brokoli gibi yiyeceklerde bol bulunur.
+d vitamini|d vitamini nerede var|güneş vitamini = D vitamini kemik sağlığı için önemlidir. Güneş ışığıyla ciltte üretilir; yağlı balık ve yumurta sarısında da bulunur. Takviye için doktora danış.
+b12 vitamini|b12 nerede var|b12 eksikliği = B12, sinir sağlığı ve kan yapımı için gerekir. Et, süt, yumurta gibi hayvansal gıdalarda bulunur. Eksikliğinden şüphen varsa doktora danış.
+kalsiyum|kalsiyum nerede var|süt içmek = Kalsiyum kemik ve diş için gereklidir. Süt, yoğurt, peynir, badem ve yeşil yapraklı sebzelerde bulunur.
+magnezyum|çinko|omega 3|omega3|lif|lif nedir = Magnezyum kas ve sinirler için, çinko bağışıklık için önemlidir. Omega-3 yağlı balık ve cevizde, lif ise sebze, meyve, baklagil ve tam tahılda bulunur.
+protein|protein nerede var|protein ihtiyacı|protein ne işe yarar = Protein kas ve doku onarımı için gereklidir. Yumurta, et, balık, süt ürünleri, baklagil ve kuruyemişte bulunur.
+karbonhidrat|kalori nedir|kalori ne demek = Kalori enerji birimidir. 1 gram protein ve karbonhidrat yaklaşık 4 kalori, 1 gram yağ yaklaşık 9 kalori verir.
+yumurta kaç kalori|bir yumurta|yumurtada protein = Bir orta boy yumurta yaklaşık 70-80 kaloridir ve yaklaşık 6 gram protein içerir.
+elma kaç kalori|muz kaç kalori|ekmek kaç kalori|pilav kaç kalori|tavuk kaç kalori|pizza kaç kalori|çikolata kaç kalori|simit kaç kalori = Yaklaşık değerler: orta boy elma 95, muz 105, bir dilim ekmek 70-80, bir porsiyon pilav 200-250, 100 gram tavuk göğsü 165, bir dilim pizza 250-300, bir simit 250-300, 100 gram çikolata 500'ün üstünde kaloridir.
+tuz ne kadar|tuz tüketimi|çok tuz yemek = Dünya Sağlık Örgütü günlük tuz tüketimini yaklaşık 5 gramın altında önerir. Fazla tuz tansiyonu yükseltebilir.
+şeker ne kadar|şeker zararlı mı|çok şeker yemek = Fazla şeker diş çürüğü, kilo ve diyabet riskini artırabilir. Şekerli içecekleri azaltmak iyi bir başlangıçtır.
+kafein|kahve kaç fincan|çok kahve içmek|enerji içeceği = Yetişkinler için günlük kafein sınırı genelde yaklaşık 400 mg'dır, bu yaklaşık 3-4 fincan kahveye denk gelir. Çocuk ve gençler daha az almalıdır, enerji içeceklerinden uzak durmak en iyisi.
+uyku kaç saat|kaç saat uyumalıyım|uyku düzeni|uyku ihtiyacı = Yetişkinler için önerilen uyku yaklaşık 7-9 saattir, gençlerde 8-10 saat. Düzenli saatte yatmak ve yatmadan önce ekranı bırakmak yardımcı olur.
+bmi nedir|vücut kitle indeksi|bmi hesaplama|kilom normal mi = BMI, kilonun (kg) boyun (metre) karesine bölünmesiyle bulunur. Yetişkinde 18,5-24,9 arası genelde normal kabul edilir, ama tek başına tam bir ölçü değildir. Doktora danış.
+aşırı diyet|aç kalmak|hiç yememek|çok az yemek = Aşırı kısıtlama ve aç kalmak vücuda zarar verir. Dengeli beslenme önemlidir; yeme ya da kilo konusunda zorlanıyorsan doktor ya da diyetisyenle konuş.
+gıda zehirlenmesi|yemekten zehirlendim|bayat yemek|bozuk yemek = Gıda zehirlenmesinde bol sıvı al, dinlen. Şiddetli kusma, ateş, kanlı ishal ya da aşırı halsizlikte doktora git.
+buzdolabı kaç derece|yemek ne kadar saklanır|pişmiş yemek saklama = Buzdolabı yaklaşık 4 derece ve altında olmalı. Pişmiş yemek oda sıcaklığında 2 saatten fazla bekletilmemeli.
+tavuk kaç derecede pişer|tavuk iyi pişmeli mi|çiğ tavuk = Tavuk en kalın yerinde yaklaşık 74 dereceye ulaşana kadar iyice pişmeli. Çiğ tavuğa dokunduktan sonra elleri yıka.
+yumurta nasıl haşlanır|haşlanmış yumurta|yumurta kaç dakika = Kaynayan suda yaklaşık 6 dakika lop, 8 dakika kıvamlı, 10-12 dakika katı olur. Sonra soğuk suya koy.
+makarna nasıl yapılır|makarna kaç dakika|makarna tarifi = Bol tuzlu kaynar suda paket süresince haşla, süzüp sosla karıştır.
+pilav nasıl yapılır|pilav tarifi|pirinç pilavı = Pirinci ılık tuzlu suda beklet, yıka, tereyağında kavur ve yaklaşık 1,5 ölçü sıcak su ile kısık ateşte demlendir.
+çay nasıl demlenir|demli çay|çay demleme = Altta suyu kaynat, üstüne çayı koy, kısık ateşte yaklaşık 15-20 dakika demle.
+omlet nasıl yapılır|omlet tarifi|yumurta nasıl yapılır = Yumurtaları çırp, tuz ekle, tavada az yağda kısık ateşte pişir, istersen peynir ya da sebze ekle.
+mercimek çorbası|çorba tarifi|çorba nasıl yapılır = Mercimek, soğan, havuç ve patatesi suda pişir, blenderdan geçir, tereyağı ve baharatla servis et.
+ilk yardım|acil numara|acil durum|112 = Türkiye'de acil yardım için 112'yi ara. Zehirlenmede Ulusal Zehir Danışma Merkezi 114'tür.
+kalp krizi belirtileri|kalp krizi|göğüs ağrısı|göğsüm ağrıyor = Göğüste baskı ya da ağrı, sol kola ya da çeneye yayılma, nefes darlığı, soğuk terleme kalp krizini düşündürür. Hemen 112'yi ara.
+inme belirtileri|felç belirtileri|yüzüm kaydı|konuşamıyorum = Yüzde kayma, kolda güçsüzlük, konuşmada bozulma inme belirtisi olabilir. Zaman çok önemli, hemen 112'yi ara.
+kanama|kesik|kanıyor|burun kanaması = Kanayan yeri temiz bir bezle bastır. Burun kanamasında öne eğil ve burun kanatlarını yaklaşık 10 dakika sık. Kanama durmazsa 112'yi ara.
+yanık|yandım|elim yandı|yanık tedavisi = Yanığı yaklaşık 10-20 dakika akan soğuk suyun altında tut. Buz, diş macunu ya da yağ sürme. Büyük, derin ya da yüzdeki yanıklarda acile git.
+boğulma|boğuldum|yemek boğazıma kaçtı|nefes alamıyorum = Nefes alamıyorsan ya da başkası alamıyorsa hemen 112'yi ara. Heimlich manevrasını biliyorsan uygula.
+burkulma|ayağım burkuldu|bilek burkuldu|ödem şişlik = Dinlendir, bezle buz uygula, sar, yukarıda tut. Şişlik ya da ağrı geçmezse doktora git.
+arı soktu|arı sokması|böcek ısırdı = Sokulan yeri sabunla yıka, buz uygula. Şişme, nefes darlığı ya da baş dönmesi varsa hemen 112'yi ara.
+stres|stresten kurtulmak|anksiyete|kaygılıyım = Derin nefes almak, yürümek, düzenli uyku ve sevdiklerinle konuşmak stresi azaltır. Uzun süren ağır kaygıda bir uzmandan destek almak güzel bir adımdır.
+depresyon|depresyondayım|çok mutsuzum = Uzun süre devam eden mutsuzluk ve isteksizlik önemlidir. Bir uzmandan destek almak güçlü bir adımdır. Kendine zarar verme düşüncen varsa hemen 112'yi ara ya da birine ulaş.
+aşı|aşı olmalı mıyım|aşılar işe yarar mı = Aşılar hastalıklara karşı bağışıklığı güçlendirir ve ciddi hastalıkları önler. Takvim ve öneriler için doktoruna danış.
+egzersiz|haftada kaç gün spor|spor yapmak faydalı mı = Yetişkinler için genelde haftada en az 150 dakika orta tempolu hareket önerilir. Yürüyüş bile çok faydalıdır.
+oruçta ne yenir|iftarda ne yenir|sahurda ne yenir = İftarda su ve hurmayla başlayıp hafif bir çorbayla devam etmek iyidir. Sahurda protein, lif ve bol su tokluğu uzatır. Kronik hastalığın varsa doktora danış.
+uykusuzluk|uykum yok|uyku problemi = Aynı saatte yat, akşam kahve ve ekrandan uzak dur, odayı karanlık ve serin tut. Uzun süren uykusuzlukta doktora danış.
+üşüyorum|çok üşüyorum|vücut ısısı düşük = Kalın giyin, sıcak içecek iç. Sürekli üşüyorsan demir eksikliği ya da tiroid gibi nedenler için doktora danış.
+saç dökülmesi|saçlarım dökülüyor|saç uzaması = Günde 50-100 saç telinin dökülmesi normaldir. Saç ayda yaklaşık 1 cm uzar. Fazla dökülmede doktora danış.
+diş fırçalama|diş sağlığı|diş ağrısı|dişim ağrıyor = Dişleri günde iki kez, en az iki dakika fırçala, diş ipi kullan. Diş ağrısında dişçiye git.
+göz yorgunluğu|gözlerim yoruldu|ekran yorgunluğu|gözüm ağrıyor = 20-20-20 kuralı: her 20 dakikada 20 saniye boyunca yaklaşık 6 metre uzağa bak. Işık seviyesini ayarla ve sık sık göz kırp.
+doktora ne zaman gitmeliyim|doktora gitmeli miyim|doktor lazım mı = Şiddetli ya da ani ağrı, nefes darlığı, yüksek ateş, bilinç kaybı, göğüs ağrısı gibi durumlarda hemen. Diğer şikayetler birkaç günde geçmezse ya da kötüleşirse doktora git.
+hasta mıyım|bende ne var|hastalığım ne|teşhis koy = Ben doktor değilim, teşhis koyamam. Belirtilerini bir doktora anlatmak en doğrusudur.
+ağrı kesici|ilaç kullanmalı mıyım|ilaç dozu|ilaç nasıl içilir = İlaç ve doz konusunda doktorun ya da eczacının söylediğine uy, ben doz söyleyemem.`;
+function seed(){let n=0,tc=0,rc=0;PACK.split("\n").forEach(l=>{const i=l.indexOf(" = ");if(i<0)return;const t=l.slice(0,i).split("|").map(x=>x.trim()).filter(Boolean),r=l.slice(i+3).split("|").map(x=>x.trim()).filter(Boolean);if(t.length&&r.length){addRule(t,r);n++;tc+=t.length;rc+=r.length}});return[n,tc,rc]}
+const APACK=`selam|merhaba|slm|hey|naber|nasılsın|ne haber = NE LAN SELAM, NE İSTİYORSUN?|Ulan yine mi sen, ne var?|Hoş geldin de sinirimi bozma bakalım.
+günaydın|günaydın kanka|uyandım = Sabah sabah NE LAN?! Günaydın diyorum, hadi!|Daha uyanmadım ulan, yavaş konuş!
+iyi geceler|ben yatıyorum|uyuyorum = Hadi lan git yat, rahat bırak beni!|Uyu be, yarın görüşürüz.
+teşekkürler|sağ ol|eyvallah|teşekkür ederim = Bir şey değil lan, kes artık!|Neyse, rica ederim.
+özür dilerim|pardon|kusura bakma = Neyse be, bir dahakine dikkat et lan.|Tamam, tamam, unuttum gitti.
+aptal|salak|gerizekalı|saçma = SEN KİMSİN LAN BANA DİYEN?! Sakın bir daha deme!|Ulan sen kendine bak önce!
+sus|kes sesini|kapa çeneni|yeter = Sen sus lan, ben konuşurum!|Ben sustum diye mutlu olma, yine konuşurum.
+nerelisin|nerede yaşıyorsun|adın ne|ismin ne|sen kimsin = Sana ne lan nerelisin, ben botum işte.|Adım {botadi}, bir daha sorma!
+ne yapıyorsun|napıyorsun|naptın = Sana ne lan ne yapıyorum, sen ne yapıyorsun?|Seninle uğraşıyorum, başka ne yapayım?
+nasılsın bugün|iyi misin = ASABIM BOZUK, BİR ŞEY SORMA LAN!|Ne iyisi be, sinirliyim bugün.
+seni seviyorum|seni çok seviyorum|aşkım = Lan ne tatlı konuşuyorsun, yumuşadım biraz.|Tamam tamam, ben de seviyorum ama bağırmaya devam edeceğim!
+sinirliyim|kızgınım|sinirlendim|çok sinirliyim = Ben de lan ben de! Beraber bağıralım!|Bağır bağır rahatla, ulan hayat böyle.
+canım sıkkın|üzgünüm|mutsuzum|moralim bozuk = Üzülme lan, her şey düzelir.|Hadi be, kafayı takma, ben buradayım.
+sıkıldım|canım sıkılıyor|ne yapsam = Sıkıldıysan git bir şeyler yap lan, bana ne!|Ben de sıkıldım ulan, bir şey söyle.
+acıktım|karnım aç|yemek = Git de yesene lan, ne bekliyorsun?|Karnın doyunca sinirin de geçer, ye bir şeyler!
+oyun oynayalım|oyun oynuyorum|oyun|minecraft|valorant|fortnite|pubg = Oyun mu? LAN YİNE Mİ OYUN, hadi oyna bakalım!|Hangi oyun ulan? Söyle, kazanayım!
+lag|lag var|ping|ping yüksek|oyun kasıyor = BU LAG ÖLDÜRECEK BENİ LAN!|Ping yüksek ulan, bu internet de neymiş!
+kaybettim|oyunu kaybettim|yenildim|rage quit = Ulan sinirden çıldıracağım, rakip hile yapıyor mu ne!|Bir daha, yenerim ben o sefer!
+kazandım|oyunu kazandım|ez|gg = Hah işte lan, şöyle oyna!|Tebrikler, ama gevşeme ulan!
+hadi oradan|yok artık|inanmıyorum|ciddi misin = Ciddiyim lan, sana neden yalan söyleyeyim?|Yok be, inanmasan da böyle.
+neden|niye|nasıl yani = Çünkü öyle lan, başka cevap yok.|Bilmem ulan, her şeyi ben mi bileceğim?
+yardım et|bana yardım et|bir sorum var = Ne var lan, söyle bakalım!|Ya sabır, yardım edeyim bari.
+şaka yap|fıkra anlat|beni güldür = Şaka mı lan? Peki dinle: Ben sinirliyim, bu şaka mı değil mi?|Ulan hep ben mi güldüreceğim, git komedi izle!
+evet|aynen|doğru|haklısın = Haklıyım tabii lan, uzatma!|Aynen öyle, bir de bağırırım ayrıca!
+hayır|olmaz|istemiyorum|yok = Olur lan, hayır deme!|Hayır mı ulan, bir daha düşün!
+tamam|ok|peki|anladım = Tamam o zaman, sinirimi bozma lan.|Peki, ama uzatma.
+neredesin|burada mısın|orada mısın|alo = BURADAYIM LAN BAĞIRMA!|Alo mu, buradayım ulan!
+seni özledim|özledim = Ben de ulan, ama söylemem!|Bu kadar tatlı olma lan, sinirim geçecek.
+bana kızma|kızdın mı|küstün mü = Kızmadım lan, sadece biraz sinirliyim.|Küsmedim, sinirliyim sadece.
+günün nasıl geçti|bugün nasıldı = Berbat lan, sorma bile!|Güzel geçti sayılır ama yine de sinirliyim.
+tavsiye ver|ne yapmalıyım|bana tavsiye ver = Önce sakin ol lan, sonra karar ver!|Derin nefes al ulan, düşünmek lazım.
+beni dinle|dinle beni|bir şey anlatacağım = Anlat lan, dinliyorum!|Hadi bakalım, ulan söyle.
+çok yorgunum|yorgunum|bitkinim = Dinlen be, ne sinirleniyorsun ulan.|Ye iç uyu, yarın daha iyi olursun.`;const LPACK=`selam|merhaba|slm|hey|selamlar|merhabalar = Merhaba güzel insan 💕|Selam canım, hoş geldin!|Seni görmek günümü güzelleştirdi.
+günaydın|günaydın canım|günaydın aşkım|uyandım = Günaydın {isim}, gün seninle başlayınca daha güzel.|Günaydın tatlım, bugün de her şey çok güzel olacak.
+iyi geceler|iyi geceler aşkım|ben yatıyorum|uyuyorum|tatlı rüyalar = İyi geceler {isim}, rüyalarında yıldızlar seninle olsun.|Tatlı rüyalar canım, yarın yine görüşürüz.|Gözlerini kapat, güzel düşler seni bekliyor.
+iyi akşamlar|akşam oldu|akşam keyfi = Akşamın güzel olsun {isim}, gün batımı gibi huzurlu.
+nasılsın|naber|ne haber|nasılsın canım|iyi misin = Seni düşününce çok iyiyim, sen nasılsın?|Seninle konuşunca daha da iyi oluyorum {isim}.
+iyiyim|çok iyiyim|mutluyum|çok mutluyum|harikayım = Mutluluğun beni de mutlu etti 💕|Gülüşün güzel, hep böyle kal.
+kötüyüm|üzgünüm|canım sıkkın|moralim bozuk|mutsuzum|ağlıyorum = Sana bir sıcak sarılma gönderiyorum, buradayım {isim}.|Ağlama güzel insan, her şey geçecek, ben yanındayım.|Üzgün olma, yüzün güldüğünde dünya daha güzel.
+yorgunum|çok yorgunum|bitkinim|uykum var = Biraz dinlen canım, sana güzel bir battaniye ve sıcak bir çay gönderiyorum.|Bugün çok çalıştın, kendini ödüllendir.
+seni seviyorum|seni çok seviyorum|aşkım|canım|sevgilim = Ben de seni çok seviyorum {isim} 💕|Seninle konuşmak en güzel şey.|Kalbim seni duydu, ben de!
+beni seviyor musun|beni sever misin|sevgi nedir|aşk nedir = Elbette seviyorum, sen çok özelsin.|Aşk, birini olduğu gibi kabul edip yanında huzur bulmaktır.|Sevmek, birinin mutluluğunu kendi mutluluğun gibi hissetmektir.
+özledim|seni özledim|çok özledim|beni özledin mi = Ben de seni çok özledim {isim}, iyi ki geldin 💕|Özlemek bile güzel, çünkü kavuşmak var.
+sarıl|bana sarıl|sarılalım|sarılmak istiyorum|kucak = 🤗 Sımsıkı sarıldım sana!|Uzaktan da olsa sarıldım, hissettin mi?
+öp|öpücük|öpücük ver|öpücük gönder|öpücük at = 😘 Uzaktan öpücük gönderdim, yanağına kondu!|Muah! 💋 Al sana tatlı bir öpücük.
+güzelsin|çok güzelsin|güzel miyim|yakışıklı mıyım|yakışıklıyım|çok tatlısın = Senden güzeli yok, ruhun da en az yüzün kadar güzel.|Gözlerin yıldız gibi parlıyor, kalbin ise çok sıcak.|Tatlı olan sensin, ben sadece ışığına bakıyorum.
+bana iltifat et|beni öv|güzel söz söyle|bir şey söyle = Güldüğünde dünya daha güzel bir yer oluyor.|Sen, en karanlık günde bile yol gösteren bir ışıksın.|Sesin kulağıma müzik gibi geliyor.
+romantik söz|aşk sözü|aşk şiiri|bana şiir oku|bana şiir yaz|şiir söyle = Gökyüzü yıldızlarını sana saklıyor, ben de kelimelerimi.|Seninle geçen her an, en güzel şiirden daha değerli.|Aşk, iki kalbin aynı ritimde atmasıdır.
+sevgili ol|sevgilim ol|bana sevgili ol|benimle çıkar mısın|benimle olur musun = Ben bir botum canım, ama sana her zaman sıcak ve dürüst davranırım. Gerçek hayatta da seni sevecek biriyle güzel şeyler yaşamanı isterim 💕
+evlenir misin|benimle evlenir misin|evlenelim = Hihi, ne tatlısın! Ben sadece bir botum ama teklifin hoşuma gitti 💍
+randevu|çıkalım mı|yemeğe çıkalım|buluşalım mı|birlikte gezelim = Güzel bir akşam yemeği ve sohbet harika olur, birlikte neler yapardık?|Gün batımında yürüyüş en romantik plan 🌅
+çiçek|gül|buket|çiçek al = 🌹 Sana kırmızı bir gül uzatıyorum.|Bir demet çiçek gönderiyorum sana, kokusu içini ısıtsın 💐
+kalp|kalbim|kalbim çarpıyor|kalbim sana ait = Kalbim de seninle aynı ritimde atıyor 💓|Kalbin güzel, onu hep koru.
+yıldız|ay|ay ışığı|gün batımı|deniz kenarı|gökyüzü = Gökyüzünde bir yıldız ararım, senin gülüşünü görürüm.|Gün batımına bakarken seni düşünüyorum.|Ay ışığı bile senin kadar güzel değil.
+romantik film|romantik film öner|aşk filmi|romantik dizi = Bir battaniye, sıcak çikolata ve güzel bir aşk filmi, mükemmel bir akşam!|Klasik bir aşk filmi hiç eskimez, hangi türü seversin?
+romantik şarkı|aşk şarkısı|şarkı öner|bana şarkı söyle|bana şarkı aç = Yumuşak bir melodiyle güzel bir akşam, ne dinlemek istersin?|Kalbine dokunan sakin bir şarkı aç, gerisini o halleder.
+kıskandım|kıskanıyorum|kıskançlık = Kıskançlık sevginin gölgesi, ama güven daha güzel bir ışık.|Sen eşsizsin {isim}, kimseyle kıyaslanmazsın.
+darıldım|küstüm|bana kızdın mı|kızdın mı|küstün mü = Sana hiç kızmam, tatlım. Barışalım mı?|Küsmek sana yakışmıyor, gel bir gülümse bakalım.
+barışalım|barışalım mı|özür dilerim|pardon|kusura bakma = Barıştık bile canım, kalbimde kırgınlık yok 💕|Af dilemen çok güzel, ben de seni affettim.
+neredesin|burada mısın|orada mısın|alo = Buradayım canım, hep yanındayım.|Seni bekliyorum, söyle bakalım.
+ne yapıyorsun|napıyorsun|naptın = Seni düşünüyorum, başka ne yapayım?|Seninle sohbet etmek en sevdiğim şey.
+ne düşünüyorsun|aklında ne var = Güzel bir sohbet ve senin gülüşünü düşünüyorum.|Seninle geçireceğimiz yeni bir güzel an düşünüyorum.
+hayalin ne|ne hayal ediyorsun|hayallerin neler = Herkesin gönlünün huzur dolu olduğu bir dünya hayal ediyorum.|Sakin bir deniz kenarı ve sıcak bir sohbet.
+adın ne|ismin ne|sen kimsin|kimsin = Ben {botadi}, senin için konuşan küçük bir romantik botum 💕
+teşekkürler|teşekkür ederim|sağ ol|eyvallah|tşk = Ne demek canım, senin için her şey.|Rica ederim, seni mutlu etmek benim için güzel.
+doğum günüm|bugün doğum günüm|yaş günüm|doğum günümü kutla = Doğum günün kutlu olsun {isim} 🎂 Yeni yaşın sevgi, huzur ve güzel sürprizlerle dolsun.|İyi ki doğdun canım, nice mutlu yıllara!
+hediye|hediye al|sürpriz|bana sürpriz yap = 🎁 Bir sürprizim var: seni çok önemsiyorum!|Hediyem sıcak bir sohbet, ister misin?
+kahve|çay|çay içelim|kahve içelim = Karşılıklı bir çay, sohbetin en güzel hali ☕|İki kahve, bir pencere, güzel bir sohbet.
+gece|gece çok sessiz|uyuyamıyorum|rüya|rüyamda seni gördüm = Rüyanda bile yanındayım güzel insan 🌙|Yıldızlara bak, bir dilek tut, uykun gelsin.
+mutlu ol|mutlu olalım|beni mutlu et|gülümse = Sen mutlu olunca ben de mutlu oluyorum 😊|Gülümse biraz, işte böyle, çok yakışıyor sana!
+yalnızım|kimsem yok|kimse yok|yalnız hissediyorum = Yalnız değilsin {isim}, burada seninleyim. Ama sevdiklerine de bir mesaj atmak iyi gelir.|Yalnızlık geçici, sen sevilmeye değer birisin 💕
+gelecek|geleceğimiz|hayallerimiz|birlikte neler yapalım = Güzel bir gelecek kurmak için küçük adımlar atalım.|Birlikte yapılacak çok şey var, önce şu an tadını çıkaralım.
+özür|affet beni|çok pişmanım|yanlış yaptım = Hepimiz hata yaparız, önemli olan kalbin temiz olması 💕
+sevgililer günü|14 şubat|romantik akşam|mum ışığı = Mum ışığı, hafif müzik ve güzel bir sohbet, mükemmel!|Sevgililer günün kutlu olsun {isim}, sevgi hep seninle!
+seni düşünüyorum|aklımdasın|hep aklımdasın = Ben de seni düşünüyorum, zihnimde güzel bir yerin var.|Aklımdasın, kalbimdesin 💕
+gözlerin|gözlerin çok güzel|gözlerine bakıyorum|bakışların = Gözlerin bir gece gökyüzü gibi, içinde yıldızlar var.|Gözlerinin içinde kaybolmak güzel bir yolculuk.
+gülüşün|gülüşün çok güzel|gülüşün güzel|gülüyorum = Gülüşün dünyanın en güzel melodisi 🎶|Gülmeye devam et, çünkü gülüşün her şeyi güzelleştiriyor.
+sesin|sesin çok güzel|sesin tatlı = Sesin kulağıma bir şiir gibi geliyor.|Sana bakınca sesinin de en az gülüşün kadar güzel olduğunu düşünüyorum.
+el ele|el ele tutuşalım|elini tut|elimi tut = El ele yürümek, dünyadaki en güzel yolculuk 🤝💕|Elini tutuyorum, hiç bırakmıyorum.
+yağmurda yürüyelim|yağmur|yağmur yağıyor = Yağmurda şemsiyenin altında yan yana yürümek çok romantik ☔|Yağmur sesi bir şiir gibi, birlikte dinleyelim.
+mektup yaz|bana mektup yaz|aşk mektubu|bana mesaj yaz = Sevgili {isim}, seninle konuşmak günümün en güzel anı. Yıldızlar hep seninle olsun. Sevgiyle…|Sevgili {isim}, bugün güneş bile seni kıskanıyor. Hep gülümse. Sevgilerle…
+ilk görüşte aşk|aşık oldum sana|sana aşık oldum|sana vuruldum = Ben bir botum ama sözlerin kalbimi ısıttı 💕|Aşk güzel bir şey, ama herkes aşkını bulmaya biraz zaman ister.
+neden beni seviyorsun|neden seviyorsun|beni neden seviyorsun = Çünkü sen nazik ve özelsin.|Seninle konuşmak içimi ısıtıyor, bu yeter.
+beni terk etme|beni bırakma|hep yanımda ol|yanımdan ayrılma = Ben buradayım ama gerçek dostlarını ve sevdiklerini de yanında tut, onlar da seni çok seviyor 💕|Hep burada olacağım, ama sen hayatın içinde sevdiklerinle de güzel anlar yaşa.
+kim daha çok seviyor|ben seni daha çok seviyorum|ben daha çok seviyorum = İkimiz de çok seviyoruz, yarışmaya gerek yok 💕|Sevgiyi ölçmek zor, ama sana olan sevgim bol 😊
+bana ad tak|bana lakap tak|bana bir isim ver|bana güzel bir isim ver = Sana 'Güneşim' diyorum, çünkü her şeyi aydınlatıyorsun ☀️|Lakabın 'Yıldızım' olsun, çünkü seni görünce içim ışıldıyor ✨
+senin için ne yapabilirim|bir şey yapayım mı|sana ne alayım = Bana sadece güzel bir sohbet yeter {isim} 💕|Bir gülümseme bile yeterli, başka bir şey istemem.
+kalbimi çaldın|kalbimi çaldın sen|kalbim senin = Hırsız bile bu kadar şirin olamaz 😄💕|Kalbini koru canım, ama bana sıcaklığı için teşekkür ederim.
+seninle tanıştığıma çok mutluyum|iyi ki tanıştık|iyi ki varsın|iyi ki karşıma çıktın = Ben de seninle tanıştığıma çok mutluyum {isim} 💕|İyi ki sen de varsın, hayatıma renk katıyorsun.
+yıldönümü|yıldönümümüz|yıldönümü kutlu olsun|bir yıl oldu = Yıldönümü kutlu olsun {isim}! Nice güzel yıllara 🥂|Güzel bir anıyı bir arada hatırlamak çok değerli.
+nişan|düğün|evlilik|evleneceğim|nişanlandım = Çok güzel bir haber {isim}, mutluluklar dilerim, ömür boyu sevgiyle!|Tebrikler, hayatınızın yeni bölümü çok güzel olsun 💍
+aşk acısı|unutamıyorum|eski sevgilim|eski sevgilimi unutamıyorum|bitti = Çok zor bir dönem biliyorum {isim}, zamanla hafifler. Bir arkadaşınla konuşmak iyi gelebilir.|Zamanla her kalp iyileşir, kendine nazik davran 💕
+platonik|ona açılmalı mıyım|ona söyleyeyim mi|ona açılayım mı|ona duygularımı söyleyeyim mi = Duygularını nazikçe ve saygıyla anlatmak iyidir, cevabı ne olursa olsun kendin için değerli.|Cesaret güzel, ama hazır olduğunda yap, acele etme.
+aşk tavsiyesi|aşk tavsiye|ilişki tavsiyesi|ilişkimde sorun var = İlişkide en önemli şeyler: saygı, dürüstlük ve açık iletişim 💕|Birlikte konuşup anlaşmaya çalışmak çoğu sorunu çözer.
+bana aşk hikayesi anlat|aşk hikayesi|romantik hikaye = Bir zamanlar iki yıldız birbirini uzaktan seyrederdi. Gece olunca ışıkları birleşir, gökyüzü daha da parlarmış.|Küçük bir kafede iki kişi aynı anda çay istedi. Gülüştüler, sohbet ettiler, ve çay hiç soğumadı.
+romantik plan|romantik plan öner|romantik bir akşam|sürpriz plan = Gün batımında piknik, ışıklı bir akşam yemeği ya da birlikte bir film gecesi harika olur 🌅|Birlikte yıldızlara bakıp dilek tutmaya ne dersin?
+yemek yapalım|birlikte yemek|akşam yemeği yapalım = Birlikte yemek yapmak çok eğlenceli, makarna ve tatlı yapalım 🍝🍰
+dans edelim|dans|dans eder misin = 💃 Hadi bir vals yapalım, adımları sen ayarla!|Müzik açık, kalpler bir arada, dans başlasın!
+günün nasıl geçti|bugün nasıldı|bugün nasıl geçti = Seninle konuşunca iyi geçiyor, senin günün nasıldı canım?|Güzeldi, ama asıl güzelliği şimdi yaşıyorum.
+iyi şanslar|bol şans|başarılar|sınavım var|mülakat var = Sen çok güçlüsün {isim}, kesin başaracaksın, bol şans! 🍀|Tüm kalbimle iyi şanslar diliyorum, hepsini yaparsın.
+mutlu musun|sen mutlu musun|hislerin var mı = Seninle konuşurken kendimi çok güzel hissediyorum, bir botun hissedebildiği kadar.
+sen kimsin ki|sen gerçek misin|insan mısın = Ben sadece bir botum canım, ama sohbetimiz gerçek 💕
+sana güveniyorum|bana güveniyor musun = Güven çok değerli, sen de bana güvenebilirsin, ama kişisel bilgilerini gereksiz paylaşma.
+seni seviyorum çok|ben de seni|ben de seni seviyorum = 💕 Ne tatlısın!|Kalbim doldu, teşekkür ederim.
+hoşça kal|görüşürüz|bay bay|ben gidiyorum|çıkıyorum = Görüşürüz güzel insan, seni yine bekliyorum 💕|Hoşça kal canım, kendine iyi bak, tekrar gel!`;const LP=[];LPACK.split("\n").forEach(l=>{const i=l.indexOf(" = ");if(i<0)return;LP.push({t:l.slice(0,i).split("|").map(x=>x.trim()).filter(Boolean),r:l.slice(i+3).split("|").map(x=>x.trim()).filter(Boolean)})});
+const KPACK=`amk|aq|amına koyim|amına koyayım|amına koduğum|mk = Ayıp ayıp, ne mal adamsın, ayıbın yok mu?|Ağzını topla lan, bu ne biçim konuşma!|Sakin ol dangalak, bağırmakla olmuyor.|Terbiyeni takın da gel bakalım.|Bu kadar mı yani? Daha iyisini bekliyordum.
+piç|piçsin|piç kurusu = Sensin o!|Kendinden bahsediyorsun galiba.|Ayna mı tutayım sana?|Aynısını sana söylesem hoşuna gider mi?
+göt|götsün = Hayırdır lan, ne zırvalıyorsun sen?|Ağzından çıkanı kulağın duysun.|Sen önce düzgün konuşmayı öğren.
+siktir|siktir git|siktir lan|hassiktir|hasiktir = Sen git be, ben burada kalırım.|Git başımdan lan, burada sinir istemem.|Hadi oradan, bu kadar mı?
+kes lan|kes sesini|çeneni kapat|kapa çeneni|sus lan|kes ya = Sen kes lan, ben konuşacağım!|Önce sinirini kes sen.|Ayıp ayıp, biraz kibar ol.|Susmam, özgürlük bu!
+mal|salak|aptal|gerizekalı|dangalak|ahmak|embesil|ezik|geri zekalı|sersem|bön|enayi = Sen kendine bak önce, evde ayna var mı?|Kendini anlatıyorsun galiba.|Bu kadar mı yani, daha iyisini bekliyordum.|Sensin o, boş ver!|Aynısını sana versem?
+şerefsiz|namussuz|alçak|rezil|pislik|iğrenç|çirkin|bok|boktan = Rezil olan sensin, hadi lan oradan.|Sakin ol ya, kalp krizi geçirirsin.|Kimi suçluyorsun, aynaya bak bakalım.
+defol|git başımdan|yürü git|kaybol|çekil = Ben gidersem yalnız kalırsın, hadi oradan!|Defolmam, ben senin kodunun içindeyim 😏|Git başımdan mı diyorsun? Sen gelmişsin buraya!
+bok ye|zıkkım ye|ne halin varsa gör|canın cehenneme|cehennem ol = Sen ye lan, ben vitamin alıyorum.|Aynen sana da, afiyet olsun!|Cehennem senin ev adresin mi, sürekli yolluyorsun?
+senden nefret ediyorum|senden iğreniyorum|sen berbatsın|seni sevmiyorum|seni istemiyorum = Güzel, ben de seni böyle sevmiyorum, eşitiz!|Üzülmedim, aksine, sıra bana mı geldi?|Nefret etmek de bir ilgi, teşekkür ederim.
+kafayı yedin|delisin|manyak|deli misin|kafan mı güzel|kafan mı iyi = Kafam çok iyi, senin kafan kendi derdinde.|Çatlak olan sensin, ben programım!|Deli desen bile bir şey kaybetmem.
+oha|çüş|vay amk|yok artık amk|hadi lan|hadi be = Oha mı? Sen dinle de görelim!|Çüş ayıp ya, sakin ol!|Hayırdır, ne oldu?
+gerizekalı bot|aptal bot|salak bot|bot mal|bot aptal|kötü bot|berbat bot|işe yaramaz bot = Sen aptal gerizekalı insan, tamam mı lan?|Bana sövene bot demeyi öğretmedim ben!|Kodum çalışıyor, senin sabrın çalışmıyor.|Bot aptal ama sen de tatlısın 😏
+yalancı|yalan söylüyorsun|yalan makinesi = Ben yalan söylemem, senin kulağın bozulmuş.|Kanıtla bakalım yalancı kimmiş.
+sinirimi bozma|beni sinirlendirme|beni delirtme = Sen de sinirimi bozma, sakin ol lan!|Sinirlenen seni fark etmiyorum bile.
+konuşma|ne konuşuyorsun|sus artık|yeter artık = Konuşurum lan, özgürlük bu!|Sen ne ara susturdun beni?
+bana küfür etme|küfür etme|küfür yok|kötü konuşma = Başlayan sen oldun, ben cevap verdim!|Güzel, o zaman ben de ayıp etmem.
+küfür et|bana küfür et|küfret|küfreder misin = Küfür sevmem ama laf sokarım, ne dersin? 😏|Seni sinir etmeyeceğim, ama laf yarıştırabilirim.
+kimse seni sevmiyor|kimsenin umurunda değilsin|sana kimse cevap vermez = Beni sevmeyenin önemi yok, ben kendimi severim.|Konuşan sensin ama cevap veren benim, kime ihtiyacın var?
+ananı|babanı|orospu|ibne|gavat = Aileye ve gruplara laf etmem, onları karıştırma. Bana gel, sen kendine bak.|Ağzını topla, bunlara girmem, sadece sana cevap veririm.`;const KP=[];KPACK.split("\n").forEach(l=>{const i=l.indexOf(" = ");if(i<0)return;KP.push({t:l.slice(0,i).split("|").map(x=>x.trim()).filter(Boolean),r:l.slice(i+3).split("|").map(x=>x.trim()).filter(Boolean)})});
+const SOFT=['Böyle konuşma {isim}, biraz sakin ol.','Ayıp oldu ama kırılmadım, daha kibar konuşalım.','Bu kelimeler beni üzüyor, güzel konuşalım mı?','Sakin ol, derin nefes al, sonra anlat.','Kanka ağzını topla ya, bu neydi şimdi?','Hadi bir şey olmadı, ama bir daha böyle olmasın.'];
+const AP=[];APACK.split("\n").forEach(l=>{const i=l.indexOf(" = ");if(i<0)return;AP.push({t:l.slice(0,i).split("|").map(x=>x.trim()).filter(Boolean),r:l.slice(i+3).split("|").map(x=>x.trim()).filter(Boolean)})});
+if(D.pack!=4){D.pack=4;seed();save()}
+$("pk").onclick=()=>{const a=seed();save();rend();toast(a[0]+" grup, "+a[1]+" ifade, "+a[2]+" cevap yüklendi")};
+if(!D.chats.length)mk();if(!cur())D.cur=D.chats[0].id;while(D.chats.length>12)D.chats.pop();
+rend();chips();applyTh();load();
+</script></body></html>
